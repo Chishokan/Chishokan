@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>智翔館 学習ドリル</title>
+  <meta name="description" content="学習塾 智翔館 中等部向けの学習・演習ツール。計算ドリルと英単語テストをブラウザだけで。" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header__inner">
+      <h1 class="app-header__title">智翔館 学習ドリル</h1>
+      <p class="app-header__sub">計算・英単語をくり返し練習しよう</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ホーム（メニュー） -->
+    <section id="view-home" class="view is-active" aria-label="メニュー">
+      <div class="menu-grid">
+        <button class="menu-card" data-goto="calc-setup">
+          <span class="menu-card__icon" aria-hidden="true">＋−×÷</span>
+          <span class="menu-card__title">計算ドリル</span>
+          <span class="menu-card__desc">四則演算をスピード練習</span>
+        </button>
+        <button class="menu-card" data-goto="vocab-setup">
+          <span class="menu-card__icon" aria-hidden="true">ABC</span>
+          <span class="menu-card__title">英単語テスト</span>
+          <span class="menu-card__desc">中学英単語を4択でチェック</span>
+        </button>
+        <button class="menu-card" data-goto="records">
+          <span class="menu-card__icon" aria-hidden="true">★</span>
+          <span class="menu-card__title">学習記録</span>
+          <span class="menu-card__desc">ベストスコアと履歴を確認</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 計算ドリル：設定 -->
+    <section id="view-calc-setup" class="view" aria-label="計算ドリルの設定">
+      <button class="back-btn" data-goto="home">← メニューへ</button>
+      <h2 class="view-title">計算ドリル</h2>
+
+      <div class="setup">
+        <fieldset class="setup__group">
+          <legend>種類</legend>
+          <div class="chip-row" id="calc-op">
+            <label class="chip"><input type="radio" name="calc-op" value="add" checked /><span>たし算</span></label>
+            <label class="chip"><input type="radio" name="calc-op" value="sub" /><span>ひき算</span></label>
+            <label class="chip"><input type="radio" name="calc-op" value="mul" /><span>かけ算</span></label>
+            <label class="chip"><input type="radio" name="calc-op" value="div" /><span>わり算</span></label>
+            <label class="chip"><input type="radio" name="calc-op" value="mix" /><span>ミックス</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>レベル</legend>
+          <div class="chip-row" id="calc-level">
+            <label class="chip"><input type="radio" name="calc-level" value="easy" checked /><span>やさしい</span></label>
+            <label class="chip"><input type="radio" name="calc-level" value="normal" /><span>ふつう</span></label>
+            <label class="chip"><input type="radio" name="calc-level" value="hard" /><span>むずかしい</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>問題数</legend>
+          <div class="chip-row" id="calc-count">
+            <label class="chip"><input type="radio" name="calc-count" value="5" /><span>5問</span></label>
+            <label class="chip"><input type="radio" name="calc-count" value="10" checked /><span>10問</span></label>
+            <label class="chip"><input type="radio" name="calc-count" value="20" /><span>20問</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <button class="primary-btn" id="calc-start">スタート</button>
+    </section>
+
+    <!-- 英単語：設定 -->
+    <section id="view-vocab-setup" class="view" aria-label="英単語テストの設定">
+      <button class="back-btn" data-goto="home">← メニューへ</button>
+      <h2 class="view-title">英単語テスト</h2>
+
+      <div class="setup">
+        <fieldset class="setup__group">
+          <legend>出題範囲</legend>
+          <div class="chip-row" id="vocab-set"><!-- JSで動的生成 --></div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>出題方向</legend>
+          <div class="chip-row" id="vocab-dir">
+            <label class="chip"><input type="radio" name="vocab-dir" value="e2j" checked /><span>英語→意味</span></label>
+            <label class="chip"><input type="radio" name="vocab-dir" value="j2e" /><span>意味→英語</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>問題数</legend>
+          <div class="chip-row" id="vocab-count">
+            <label class="chip"><input type="radio" name="vocab-count" value="5" /><span>5問</span></label>
+            <label class="chip"><input type="radio" name="vocab-count" value="10" checked /><span>10問</span></label>
+            <label class="chip"><input type="radio" name="vocab-count" value="all" /><span>全部</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <button class="primary-btn" id="vocab-start">スタート</button>
+    </section>
+
+    <!-- 出題（共通） -->
+    <section id="view-quiz" class="view" aria-label="出題">
+      <div class="quiz-bar">
+        <button class="back-btn" id="quiz-quit">やめる</button>
+        <div class="quiz-bar__progress">
+          <span id="quiz-index">1</span> / <span id="quiz-total">10</span>
+        </div>
+        <div class="quiz-bar__timer" id="quiz-timer">0.0s</div>
+      </div>
+
+      <div class="progress-track"><div class="progress-track__fill" id="quiz-progress"></div></div>
+
+      <div class="quiz-card">
+        <p class="quiz-card__question" id="quiz-question">—</p>
+
+        <!-- 計算：入力式 -->
+        <form class="quiz-answer" id="quiz-input-form" hidden>
+          <input type="number" inputmode="numeric" id="quiz-input" class="quiz-input" placeholder="答え" autocomplete="off" />
+          <button type="submit" class="primary-btn">こたえる</button>
+        </form>
+
+        <!-- 英単語：4択 -->
+        <div class="choices" id="quiz-choices" hidden></div>
+
+        <p class="quiz-feedback" id="quiz-feedback" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- 結果 -->
+    <section id="view-result" class="view" aria-label="結果">
+      <h2 class="view-title">結果</h2>
+      <div class="result-card">
+        <div class="result-score">
+          <span class="result-score__num" id="result-score">0</span>
+          <span class="result-score__den">/ <span id="result-total">10</span></span>
+        </div>
+        <p class="result-meta" id="result-meta">—</p>
+        <p class="result-best" id="result-best"></p>
+      </div>
+
+      <div id="result-review" class="review"></div>
+
+      <div class="result-actions">
+        <button class="primary-btn" id="result-retry">もう一回</button>
+        <button class="back-btn" data-goto="home">メニューへ</button>
+      </div>
+    </section>
+
+    <!-- 学習記録 -->
+    <section id="view-records" class="view" aria-label="学習記録">
+      <button class="back-btn" data-goto="home">← メニューへ</button>
+      <h2 class="view-title">学習記録</h2>
+      <div id="records-body" class="records"></div>
+      <button class="danger-btn" id="records-clear" hidden>記録を全部消す</button>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>智翔館 学習ドリル ／ ブラウザだけで動きます（記録はこの端末に保存）</p>
+  </footer>
+
+  <script src="js/storage.js"></script>
+  <script src="js/calc.js"></script>
+  <script src="js/vocab.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
