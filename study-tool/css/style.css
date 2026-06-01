@@ -106,6 +106,7 @@ body {
   margin: 0;
 }
 .setup__group legend { font-size: 0.85rem; font-weight: 700; color: var(--ink-soft); padding: 0 6px; }
+.setup__note { margin: 10px 2px 0; font-size: 0.75rem; color: var(--ink-soft); line-height: 1.5; }
 
 .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .chip { position: relative; cursor: pointer; }

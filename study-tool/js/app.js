@@ -15,6 +15,10 @@
     var el = doc.querySelector('input[name="' + name + '"]:checked');
     return el ? el.value : null;
   }
+  // 記述解答の照合用：小文字化し英数字以外（空白・記号・~ 等）を無視する
+  function normalizeText(s) {
+    return String(s == null ? "" : s).toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
 
   // ---- 画面遷移 ----
   function show(viewId) {
@@ -75,12 +79,22 @@
     feedback.textContent = "";
     feedback.className = "quiz-feedback";
 
-    if (q.accepts === "number") {
+    if (q.accepts === "number" || q.accepts === "text") {
       inputForm.hidden = false;
       choicesEl.hidden = true;
       var input = doc.getElementById("quiz-input");
       input.value = "";
       input.disabled = false;
+      if (q.accepts === "text") {
+        input.type = "text";
+        input.setAttribute("inputmode", "latin");
+        input.setAttribute("autocapitalize", "none");
+        input.placeholder = "英語を入力";
+      } else {
+        input.type = "number";
+        input.setAttribute("inputmode", "numeric");
+        input.placeholder = "答え";
+      }
       input.focus();
     } else {
       inputForm.hidden = true;
@@ -104,6 +118,9 @@
 
     if (q.accepts === "number") {
       correct = Number(value) === q.answer;
+      doc.getElementById("quiz-input").disabled = true;
+    } else if (q.accepts === "text") {
+      correct = normalizeText(value) === normalizeText(q.answer);
       doc.getElementById("quiz-input").disabled = true;
     } else {
       correct = String(value) === String(q.answer);
@@ -261,20 +278,30 @@
   function buildVocabSetOptions() {
     var wrap = doc.getElementById("vocab-set");
     wrap.innerHTML = "";
-    global.VocabQuiz.setList().forEach(function (s, i) {
+    var list = global.VocabQuiz.setList();
+
+    function addOption(id, text, checked) {
       var label = doc.createElement("label");
       label.className = "chip";
       var input = doc.createElement("input");
       input.type = "radio";
       input.name = "vocab-set";
-      input.value = s.id;
-      if (i === 0) input.checked = true;
+      input.value = id;
+      if (checked) input.checked = true;
       var span = doc.createElement("span");
-      span.textContent = s.label + "（" + s.count + "語）";
+      span.textContent = text;
       label.appendChild(input);
       label.appendChild(span);
       wrap.appendChild(label);
+    }
+
+    var total = 0;
+    list.forEach(function (s, i) {
+      total += s.count;
+      addOption(s.id, s.label + "（" + s.count + "語）", i === 0);
     });
+    // 収録単語の全範囲からまとめて出題（難易度アップ）
+    addOption("all", "全範囲（" + total + "語）", false);
   }
 
   function startCalc() {
@@ -287,9 +314,10 @@
   function startVocab() {
     var setId = checkedValue("vocab-set");
     var dir = checkedValue("vocab-dir");
+    var format = checkedValue("vocab-format");
     var countRaw = checkedValue("vocab-count");
     var count = countRaw === "all" ? "all" : parseInt(countRaw, 10);
-    startSession(global.VocabQuiz.build(setId, dir, count));
+    startSession(global.VocabQuiz.build(setId, dir, count, format));
   }
 
   function retry() {
@@ -298,7 +326,7 @@
       startSession(global.CalcDrill.build(lastSetup.op, lastSetup.level, session.questions.length));
     } else {
       var count = session.questions.length;
-      startSession(global.VocabQuiz.build(lastSetup.setId, lastSetup.dir, count));
+      startSession(global.VocabQuiz.build(lastSetup.setId, lastSetup.dir, count, lastSetup.format));
     }
   }
 

@@ -96,6 +96,16 @@
         </fieldset>
 
         <fieldset class="setup__group">
+          <legend>出題形式（難易度）</legend>
+          <div class="chip-row" id="vocab-format">
+            <label class="chip"><input type="radio" name="vocab-format" value="choice4" checked /><span>4択</span></label>
+            <label class="chip"><input type="radio" name="vocab-format" value="choice8" /><span>8択</span></label>
+            <label class="chip"><input type="radio" name="vocab-format" value="type" /><span>記述（英語を入力）</span></label>
+          </div>
+          <p class="setup__note">※「記述」は意味を見て英語のつづりを入力します（出題方向は無効）。</p>
+        </fieldset>
+
+        <fieldset class="setup__group">
           <legend>問題数</legend>
           <div class="chip-row" id="vocab-count">
             <label class="chip"><input type="radio" name="vocab-count" value="5" /><span>5問</span></label>

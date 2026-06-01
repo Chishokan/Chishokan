@@ -85,47 +85,70 @@
     return a;
   }
 
-  /**
-   * 4択問題セットを生成する。
-   * @param {string} setId  範囲ID
-   * @param {string} dir    "e2j" または "j2e"
-   * @param {number|"all"} count 問題数
-   */
-  function build(setId, dir, count) {
+  // 指定範囲の単語配列を返す。"all" は全範囲を結合。
+  function wordsFor(setId) {
+    if (setId === "all") {
+      var merged = [];
+      Object.keys(SETS).forEach(function (id) { merged = merged.concat(SETS[id].words); });
+      return merged;
+    }
     var set = SETS[setId];
     if (!set) throw new Error("unknown vocab set: " + setId);
+    return set.words;
+  }
 
-    var keyQ = dir === "j2e" ? "ja" : "en";
-    var keyA = dir === "j2e" ? "en" : "ja";
+  function labelFor(setId) {
+    return setId === "all" ? "全範囲" : SETS[setId].label;
+  }
 
-    var pool = shuffle(set.words);
+  /**
+   * 問題セットを生成する。
+   * @param {string} setId  範囲ID（"all" で全範囲）
+   * @param {string} dir    "e2j"（英語→意味）/ "j2e"（意味→英語）
+   * @param {number|"all"} count 問題数
+   * @param {string} format "choice4" / "choice8" / "type"（記述・英語入力）
+   */
+  function build(setId, dir, count, format) {
+    format = format || "choice4";
+    var words = wordsFor(setId);
+    var isType = format === "type";
+
+    // 記述は「意味→英語（つづり入力）」固定。選択式は dir に従う。
+    var keyQ = isType ? "ja" : (dir === "j2e" ? "ja" : "en");
+    var keyA = isType ? "en" : (dir === "j2e" ? "en" : "ja");
+
+    var pool = shuffle(words);
     var n = count === "all" ? pool.length : Math.min(count, pool.length);
     var picked = pool.slice(0, n);
 
-    var questions = picked.map(function (w) {
-      // 正解以外から3つダミーを選ぶ
-      var distractors = shuffle(
-        set.words.filter(function (x) { return x[keyA] !== w[keyA]; })
-      ).slice(0, 3).map(function (x) { return x[keyA]; });
+    // 選択肢の数（正解を含む）。プールが足りなければ可能な数まで。
+    var numChoices = Math.min(format === "choice8" ? 8 : 4, words.length);
 
-      var choices = shuffle(distractors.concat([w[keyA]]));
-      return {
-        question: w[keyQ],
-        answer: w[keyA],
-        choices: choices,
-        accepts: "choice",
-      };
+    var questions = picked.map(function (w) {
+      var q = { question: w[keyQ], answer: w[keyA] };
+      if (isType) {
+        q.accepts = "text";
+      } else {
+        var distractors = shuffle(
+          words.filter(function (x) { return x[keyA] !== w[keyA]; })
+        ).slice(0, numChoices - 1).map(function (x) { return x[keyA]; });
+        q.choices = shuffle(distractors.concat([w[keyA]]));
+        q.accepts = "choice";
+      }
+      return q;
     });
 
-    var dirLabel = dir === "j2e" ? "意味→英語" : "英語→意味";
+    var dirLabel = isType ? "意味→英語" : (dir === "j2e" ? "意味→英語" : "英語→意味");
+    var fmtLabel = format === "choice8" ? "8択" : (isType ? "記述" : "4択");
     return {
       questions: questions,
       meta: {
         mode: "vocab",
-        groupId: "vocab:" + setId + ":" + dir,
-        label: "英単語 / " + set.label + " / " + dirLabel,
+        groupId: "vocab:" + setId + ":" + (isType ? "type" : dir) + ":" + format,
+        label: "英単語 / " + labelFor(setId) + " / " + dirLabel + " / " + fmtLabel,
         setId: setId,
         dir: dir,
+        format: format,
       },
     };
   }
