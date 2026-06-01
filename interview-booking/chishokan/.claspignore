@@ -1,0 +1,11 @@
+# clasp push でGASへ送るのは下記4ファイルのみ。
+# それ以外（README・gitファイル等）はGASへ送らない。
+
+# いったん全部を無視して…
+**/**
+
+# 必要なファイルだけ push 対象に戻す
+!appsscript.json
+!コード.js
+!index.html
+!admin.html

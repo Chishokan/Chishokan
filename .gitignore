@@ -1,0 +1,17 @@
+# clasp の認証情報（絶対にコミットしない）
+.clasprc.json
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+*.swp
+
+# ローカル限定の秘密情報・環境変数
+.env
+*.local
+secrets.*
