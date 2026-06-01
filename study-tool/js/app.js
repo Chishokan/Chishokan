@@ -275,33 +275,45 @@
   // ---- セットアップ画面のロジック ----
   var lastSetup = null;
 
+  // チップ（ラジオ）を1つ追加する共通ヘルパ
+  function addChip(wrap, name, value, text, checked) {
+    var label = doc.createElement("label");
+    label.className = "chip";
+    var input = doc.createElement("input");
+    input.type = "radio";
+    input.name = name;
+    input.value = value;
+    if (checked) input.checked = true;
+    var span = doc.createElement("span");
+    span.textContent = text;
+    label.appendChild(input);
+    label.appendChild(span);
+    wrap.appendChild(label);
+  }
+
+  // 学年チップを生成（先頭を選択状態に）
+  function buildVocabGradeOptions() {
+    var wrap = doc.getElementById("vocab-grade");
+    wrap.innerHTML = "";
+    global.VocabQuiz.gradeList().forEach(function (g, i) {
+      addChip(wrap, "vocab-grade", g.id, g.label, i === 0);
+    });
+  }
+
+  // 選択中の学年に応じて出題範囲チップを作り直す
   function buildVocabSetOptions() {
+    var gradeId = checkedValue("vocab-grade");
     var wrap = doc.getElementById("vocab-set");
     wrap.innerHTML = "";
-    var list = global.VocabQuiz.setList();
-
-    function addOption(id, text, checked) {
-      var label = doc.createElement("label");
-      label.className = "chip";
-      var input = doc.createElement("input");
-      input.type = "radio";
-      input.name = "vocab-set";
-      input.value = id;
-      if (checked) input.checked = true;
-      var span = doc.createElement("span");
-      span.textContent = text;
-      label.appendChild(input);
-      label.appendChild(span);
-      wrap.appendChild(label);
-    }
+    var list = global.VocabQuiz.setList(gradeId);
 
     var total = 0;
     list.forEach(function (s, i) {
       total += s.count;
-      addOption(s.id, s.label + "（" + s.count + "語）", i === 0);
+      addChip(wrap, "vocab-set", s.id, s.label + "（" + s.count + "語）", i === 0);
     });
-    // 収録単語の全範囲からまとめて出題（難易度アップ）
-    addOption("all", "全範囲（" + total + "語）", false);
+    // その学年の全範囲からまとめて出題
+    addChip(wrap, "vocab-set", "all", "全範囲（" + total + "語）", false);
   }
 
   function startCalc() {
@@ -312,12 +324,13 @@
   }
 
   function startVocab() {
+    var gradeId = checkedValue("vocab-grade");
     var setId = checkedValue("vocab-set");
     var dir = checkedValue("vocab-dir");
     var format = checkedValue("vocab-format");
     var countRaw = checkedValue("vocab-count");
     var count = countRaw === "all" ? "all" : parseInt(countRaw, 10);
-    startSession(global.VocabQuiz.build(setId, dir, count, format));
+    startSession(global.VocabQuiz.build(gradeId, setId, dir, count, format));
   }
 
   function retry() {
@@ -326,13 +339,16 @@
       startSession(global.CalcDrill.build(lastSetup.op, lastSetup.level, session.questions.length));
     } else {
       var count = session.questions.length;
-      startSession(global.VocabQuiz.build(lastSetup.setId, lastSetup.dir, count, lastSetup.format));
+      startSession(global.VocabQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.dir, count, lastSetup.format));
     }
   }
 
   // ---- イベント配線 ----
   function init() {
+    buildVocabGradeOptions();
     buildVocabSetOptions();
+    // 学年を切り替えたら範囲チップを作り直す
+    doc.getElementById("vocab-grade").addEventListener("change", buildVocabSetOptions);
 
     // データ属性で画面遷移するボタンをまとめて配線
     $all("[data-goto]").forEach(function (btn) {
