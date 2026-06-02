@@ -332,10 +332,32 @@
     };
   }
 
+  // 収録単語を元の並び順で平坦に書き出す（CSVエクスポート用）
+  function dump() {
+    var rows = [];
+    Object.keys(GRADES).forEach(function (gid) {
+      var grade = GRADES[gid];
+      Object.keys(grade.sets).forEach(function (sid) {
+        grade.sets[sid].words.forEach(function (w) {
+          rows.push({
+            gradeId: gid,
+            gradeLabel: grade.label,
+            setId: sid,
+            setLabel: grade.sets[sid].label,
+            en: w.en,
+            ja: w.ja,
+          });
+        });
+      });
+    });
+    return rows;
+  }
+
   global.VocabQuiz = {
     gradeList: gradeList,
     setList: setList,
     build: build,
     buildFromWords: buildFromWords,
+    dump: dump,
   };
 })(window);

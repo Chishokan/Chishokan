@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>智翔館 学習ドリル</title>
   <meta name="description" content="学習塾 智翔館 中等部向けの学習・演習ツール。計算ドリルと英単語テストをブラウザだけで。" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link rel="stylesheet" href="css/style.css?v=5" />
 </head>
 <body>
   <header class="app-header">
@@ -30,9 +30,9 @@
           <span class="menu-card__desc">中学英単語を4択でチェック</span>
         </button>
         <button class="menu-card" data-goto="mistakes">
-          <span class="menu-card__icon" aria-hidden="true">✗</span>
-          <span class="menu-card__title">苦手な単語</span>
-          <span class="menu-card__desc">間違えた単語だけ復習</span>
+          <span class="menu-card__icon" aria-hidden="true">📕</span>
+          <span class="menu-card__title">マイ単語帳</span>
+          <span class="menu-card__desc">間違えた単語をまとめて復習</span>
         </button>
         <button class="menu-card" data-goto="records">
           <span class="menu-card__icon" aria-hidden="true">★</span>
@@ -126,6 +126,7 @@
       </div>
 
       <button class="primary-btn" id="vocab-start">スタート</button>
+      <button class="back-btn" id="vocab-export">収録単語をCSVで書き出す</button>
     </section>
 
     <!-- 出題（共通） -->
@@ -176,21 +177,21 @@
       </div>
     </section>
 
-    <!-- 苦手な単語 -->
-    <section id="view-mistakes" class="view" aria-label="苦手な単語">
+    <!-- マイ単語帳 -->
+    <section id="view-mistakes" class="view" aria-label="マイ単語帳">
       <button class="back-btn" data-goto="home">← メニューへ</button>
-      <h2 class="view-title">苦手な単語</h2>
+      <h2 class="view-title">マイ単語帳</h2>
       <p class="mistakes-lead" id="mistakes-summary">—</p>
 
       <div class="mistakes-actions" id="mistakes-actions" hidden>
-        <span class="mistakes-actions__label">苦手だけ復習：</span>
+        <span class="mistakes-actions__label">この単語帳で復習：</span>
         <button class="pill-btn" data-review="choice4">4択</button>
         <button class="pill-btn" data-review="choice8">8択</button>
         <button class="pill-btn" data-review="type">記述</button>
       </div>
 
       <div id="mistakes-body" class="records"></div>
-      <button class="danger-btn" id="mistakes-clear" hidden>苦手リストを全部消す</button>
+      <button class="danger-btn" id="mistakes-clear" hidden>マイ単語帳を空にする</button>
     </section>
 
     <!-- 学習記録 -->
@@ -206,9 +207,9 @@
     <p>智翔館 学習ドリル ／ ブラウザだけで動きます（記録はこの端末に保存）</p>
   </footer>
 
-  <script src="js/storage.js?v=4"></script>
-  <script src="js/calc.js?v=4"></script>
-  <script src="js/vocab.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/storage.js?v=5"></script>
+  <script src="js/calc.js?v=5"></script>
+  <script src="js/vocab.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>

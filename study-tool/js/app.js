@@ -302,12 +302,12 @@
 
     body.innerHTML = "";
     if (words.length === 0) {
-      summary.textContent = "苦手な単語はまだありません。英単語テストで間違えた単語がここに集まります。";
+      summary.textContent = "マイ単語帳はまだ空です。英単語テストで間違えた単語がここに集まります。";
       actions.hidden = true;
       clearBtn.hidden = true;
       return;
     }
-    summary.textContent = "間違えてまだ正解できていない単語：" + words.length + " 個（正解できると自動で消えます）";
+    summary.textContent = "まだ覚えきれていない単語：" + words.length + " 個（正解できると自動で消えます）";
     actions.hidden = false;
     clearBtn.hidden = false;
 
@@ -380,6 +380,34 @@
     // 記述は意味→英語固定。選択式は英語→意味で出題。
     var dir = format === "type" ? "j2e" : "e2j";
     startSession(global.VocabQuiz.buildFromWords(words, dir, "all", format));
+  }
+
+  // ---- 収録単語のCSVエクスポート ----
+  // フィールドにカンマ・改行・引用符が含まれる場合に備えて必ずクォートする
+  function csvCell(v) {
+    return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  }
+
+  function exportWordsCSV() {
+    var rows = global.VocabQuiz.dump();
+    var header = ["学年", "範囲", "英語", "日本語"];
+    var lines = [header.map(csvCell).join(",")];
+    rows.forEach(function (r) {
+      lines.push([r.gradeLabel, r.setLabel, r.en, r.ja].map(csvCell).join(","));
+    });
+    // Excelで文字化けしないよう UTF-8 BOM + CRLF
+    var csv = "﻿" + lines.join("\r\n") + "\r\n";
+    var blob = new global.Blob([csv], { type: "text/csv;charset=utf-8;" });
+    var url = global.URL.createObjectURL(blob);
+    var a = doc.createElement("a");
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+    a.href = url;
+    a.download = "智翔館_収録単語_" + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + ".csv";
+    doc.body.appendChild(a);
+    a.click();
+    doc.body.removeChild(a);
+    global.URL.revokeObjectURL(url);
   }
 
   // ---- セットアップ画面のロジック ----
@@ -500,11 +528,13 @@
     });
 
     doc.getElementById("mistakes-clear").addEventListener("click", function () {
-      if (global.confirm("苦手リストをすべて消します。よろしいですか？")) {
+      if (global.confirm("マイ単語帳をすべて消します。よろしいですか？")) {
         global.StudyStore.clearMistakes();
         renderMistakes();
       }
     });
+
+    doc.getElementById("vocab-export").addEventListener("click", exportWordsCSV);
 
     show("home");
   }
