@@ -26,6 +26,7 @@
     var el = doc.getElementById("view-" + viewId);
     if (el) el.classList.add("is-active");
     if (viewId === "records") renderRecords();
+    if (viewId === "mistakes") renderMistakes();
     if (viewId === "home" || viewId === "calc-setup" || viewId === "vocab-setup") {
       // home に戻る系では実行中セッションを止める
       stopTimer();
@@ -139,6 +140,12 @@
     } else {
       feedback.textContent = "せいかいは「" + q.answer + "」";
       feedback.className = "quiz-feedback is-bad";
+    }
+
+    // 英単語：間違えたら苦手リストへ、正解できたら外す
+    if (session.meta.mode === "vocab" && q.word) {
+      if (correct) global.StudyStore.resolveMistake(q.word);
+      else global.StudyStore.addMistake(q.word);
     }
 
     session.review.push({
@@ -272,6 +279,109 @@
     });
   }
 
+  // ---- 苦手な単語 ----
+  // gradeId / setId からラベルを引くための対応表を作る
+  function buildLabelMaps() {
+    var gradeMap = {};
+    var setMap = {};
+    global.VocabQuiz.gradeList().forEach(function (g) {
+      gradeMap[g.id] = g.label;
+      global.VocabQuiz.setList(g.id).forEach(function (s) {
+        setMap[g.id + "|" + s.id] = s.label;
+      });
+    });
+    return { grade: gradeMap, set: setMap };
+  }
+
+  function renderMistakes() {
+    var body = doc.getElementById("mistakes-body");
+    var summary = doc.getElementById("mistakes-summary");
+    var actions = doc.getElementById("mistakes-actions");
+    var clearBtn = doc.getElementById("mistakes-clear");
+    var words = global.StudyStore.listMistakes();
+
+    body.innerHTML = "";
+    if (words.length === 0) {
+      summary.textContent = "苦手な単語はまだありません。英単語テストで間違えた単語がここに集まります。";
+      actions.hidden = true;
+      clearBtn.hidden = true;
+      return;
+    }
+    summary.textContent = "間違えてまだ正解できていない単語：" + words.length + " 個（正解できると自動で消えます）";
+    actions.hidden = false;
+    clearBtn.hidden = false;
+
+    var maps = buildLabelMaps();
+
+    // 学年・範囲ごとにまとめて表示
+    var groups = {};
+    var order = [];
+    words.forEach(function (w) {
+      var gkey = w.gradeId + "|" + w.setId;
+      if (!groups[gkey]) { groups[gkey] = []; order.push(gkey); }
+      groups[gkey].push(w);
+    });
+
+    order.forEach(function (gkey) {
+      var parts = gkey.split("|");
+      var title = (maps.grade[parts[0]] || parts[0]) + " " + (maps.set[gkey] || parts[1]);
+
+      var group = doc.createElement("div");
+      group.className = "record-group";
+      var head = doc.createElement("div");
+      head.className = "record-group__head";
+      var titleEl = doc.createElement("span");
+      titleEl.className = "record-group__title";
+      titleEl.textContent = title;
+      var cnt = doc.createElement("span");
+      cnt.className = "record-group__best";
+      cnt.textContent = groups[gkey].length + " 語";
+      head.appendChild(titleEl);
+      head.appendChild(cnt);
+      group.appendChild(head);
+
+      groups[gkey].forEach(function (w) {
+        var item = doc.createElement("div");
+        item.className = "mistake-item";
+
+        var en = doc.createElement("span");
+        en.className = "mistake-item__en";
+        en.textContent = w.en;
+        var ja = doc.createElement("span");
+        ja.className = "mistake-item__ja";
+        ja.textContent = w.ja;
+        var count = doc.createElement("span");
+        count.className = "mistake-item__count";
+        count.textContent = "✗" + w.count;
+        var del = doc.createElement("button");
+        del.className = "mistake-item__del";
+        del.type = "button";
+        del.textContent = "×";
+        del.title = "この単語をリストから外す";
+        del.addEventListener("click", function () {
+          global.StudyStore.removeMistake(w.gradeId, w.en);
+          renderMistakes();
+        });
+
+        item.appendChild(en);
+        item.appendChild(ja);
+        item.appendChild(count);
+        item.appendChild(del);
+        group.appendChild(item);
+      });
+
+      body.appendChild(group);
+    });
+  }
+
+  function startMistakeReview(format) {
+    var words = global.StudyStore.listMistakes();
+    if (!words.length) return;
+    // 記述は意味→英語固定。選択式は英語→意味で出題。
+    var dir = format === "type" ? "j2e" : "e2j";
+    startSession(global.VocabQuiz.buildFromWords(words, dir, "all", format));
+  }
+
   // ---- セットアップ画面のロジック ----
   var lastSetup = null;
 
@@ -337,6 +447,9 @@
     if (!lastSetup) { show("home"); return; }
     if (lastSetup.mode === "calc") {
       startSession(global.CalcDrill.build(lastSetup.op, lastSetup.level, session.questions.length));
+    } else if (lastSetup.isReview) {
+      // 苦手復習：その時点の苦手単語で作り直す（解けた分は減っている）
+      startMistakeReview(lastSetup.format);
     } else {
       var count = session.questions.length;
       startSession(global.VocabQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.dir, count, lastSetup.format));
@@ -378,6 +491,18 @@
       if (global.confirm("この端末の学習記録をすべて消します。よろしいですか？")) {
         global.StudyStore.clear();
         renderRecords();
+      }
+    });
+
+    // 苦手だけ復習（4択 / 8択 / 記述）
+    $all("[data-review]").forEach(function (btn) {
+      btn.addEventListener("click", function () { startMistakeReview(btn.getAttribute("data-review")); });
+    });
+
+    doc.getElementById("mistakes-clear").addEventListener("click", function () {
+      if (global.confirm("苦手リストをすべて消します。よろしいですか？")) {
+        global.StudyStore.clearMistakes();
+        renderMistakes();
       }
     });
 

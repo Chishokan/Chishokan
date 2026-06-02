@@ -185,18 +185,35 @@
     });
   }
 
+  // 単語に出自（学年・範囲）を付けたコピーを返す
+  function tagWords(gradeId, setId) {
+    return GRADES[gradeId].sets[setId].words.map(function (w) {
+      return { en: w.en, ja: w.ja, gradeId: gradeId, setId: setId };
+    });
+  }
+
   // 指定範囲の単語配列。setId が "all" のときは学年内の全範囲を結合。
   function wordsFor(gradeId, setId) {
     var grade = GRADES[gradeId];
     if (!grade) throw new Error("unknown grade: " + gradeId);
     if (setId === "all") {
       var merged = [];
-      Object.keys(grade.sets).forEach(function (id) { merged = merged.concat(grade.sets[id].words); });
+      Object.keys(grade.sets).forEach(function (id) { merged = merged.concat(tagWords(gradeId, id)); });
       return merged;
     }
-    var set = grade.sets[setId];
-    if (!set) throw new Error("unknown set: " + gradeId + "/" + setId);
-    return set.words;
+    if (!grade.sets[setId]) throw new Error("unknown set: " + gradeId + "/" + setId);
+    return tagWords(gradeId, setId);
+  }
+
+  // 全学年・全範囲の単語（復習の選択肢プール用）
+  function allWords() {
+    var out = [];
+    Object.keys(GRADES).forEach(function (gid) {
+      Object.keys(GRADES[gid].sets).forEach(function (sid) {
+        out = out.concat(tagWords(gid, sid));
+      });
+    });
+    return out;
   }
 
   function rangeLabel(gradeId, setId) {
@@ -215,6 +232,55 @@
     return a;
   }
 
+  // pool から答え(answerVal)以外の値を、重複なく最大 num 個選ぶ
+  function pickDistractors(pool, keyA, answerVal, num) {
+    var seen = {};
+    seen[answerVal] = true;
+    var out = [];
+    var shuffled = shuffle(pool);
+    for (var i = 0; i < shuffled.length && out.length < num; i++) {
+      var v = shuffled[i][keyA];
+      if (!seen[v]) { seen[v] = true; out.push(v); }
+    }
+    return out;
+  }
+
+  // 単語配列から問題を作る共通処理。distractorPool は選択肢のダミー供給源。
+  function makeQuestions(words, dir, count, format, distractorPool) {
+    var isType = format === "type";
+    var keyQ = isType ? "ja" : (dir === "j2e" ? "ja" : "en");
+    var keyA = isType ? "en" : (dir === "j2e" ? "en" : "ja");
+
+    var pool = shuffle(words);
+    var n = count === "all" ? pool.length : Math.min(count, pool.length);
+    var picked = pool.slice(0, n);
+
+    var numChoices = Math.min(format === "choice8" ? 8 : 4, distractorPool.length);
+
+    return picked.map(function (w) {
+      var q = {
+        question: w[keyQ],
+        answer: w[keyA],
+        word: { gradeId: w.gradeId, setId: w.setId, en: w.en, ja: w.ja },
+      };
+      if (isType) {
+        q.accepts = "text";
+      } else {
+        var distractors = pickDistractors(distractorPool, keyA, w[keyA], numChoices - 1);
+        q.choices = shuffle(distractors.concat([w[keyA]]));
+        q.accepts = "choice";
+      }
+      return q;
+    });
+  }
+
+  function dirLabelOf(dir, isType) {
+    return isType ? "意味→英語" : (dir === "j2e" ? "意味→英語" : "英語→意味");
+  }
+  function fmtLabelOf(format) {
+    return format === "choice8" ? "8択" : (format === "type" ? "記述" : "4択");
+  }
+
   /**
    * 問題セットを生成する。
    * @param {string} gradeId 学年ID
@@ -227,42 +293,39 @@
     format = format || "choice4";
     var words = wordsFor(gradeId, setId);
     var isType = format === "type";
+    var questions = makeQuestions(words, dir, count, format, words);
 
-    // 記述は「意味→英語（つづり入力）」固定。選択式は dir に従う。
-    var keyQ = isType ? "ja" : (dir === "j2e" ? "ja" : "en");
-    var keyA = isType ? "en" : (dir === "j2e" ? "en" : "ja");
-
-    var pool = shuffle(words);
-    var n = count === "all" ? pool.length : Math.min(count, pool.length);
-    var picked = pool.slice(0, n);
-
-    // 選択肢の数（正解を含む）。プールが足りなければ可能な数まで。
-    var numChoices = Math.min(format === "choice8" ? 8 : 4, words.length);
-
-    var questions = picked.map(function (w) {
-      var q = { question: w[keyQ], answer: w[keyA] };
-      if (isType) {
-        q.accepts = "text";
-      } else {
-        var distractors = shuffle(
-          words.filter(function (x) { return x[keyA] !== w[keyA]; })
-        ).slice(0, numChoices - 1).map(function (x) { return x[keyA]; });
-        q.choices = shuffle(distractors.concat([w[keyA]]));
-        q.accepts = "choice";
-      }
-      return q;
-    });
-
-    var dirLabel = isType ? "意味→英語" : (dir === "j2e" ? "意味→英語" : "英語→意味");
-    var fmtLabel = format === "choice8" ? "8択" : (isType ? "記述" : "4択");
     return {
       questions: questions,
       meta: {
         mode: "vocab",
         groupId: "vocab:" + gradeId + ":" + setId + ":" + (isType ? "type" : dir) + ":" + format,
-        label: "英単語 / " + rangeLabel(gradeId, setId) + " / " + dirLabel + " / " + fmtLabel,
+        label: "英単語 / " + rangeLabel(gradeId, setId) + " / " + dirLabelOf(dir, isType) + " / " + fmtLabelOf(format),
         gradeId: gradeId,
         setId: setId,
+        dir: dir,
+        format: format,
+      },
+    };
+  }
+
+  /**
+   * 任意の単語配列（＝苦手単語）から復習問題を作る。
+   * ダミー選択肢は全収録単語から供給するので、苦手が少なくても選択肢が揃う。
+   * @param {Array} words 各要素 { gradeId, setId, en, ja }
+   */
+  function buildFromWords(words, dir, count, format) {
+    format = format || "choice4";
+    var isType = format === "type";
+    var questions = makeQuestions(words, dir, count, format, allWords());
+
+    return {
+      questions: questions,
+      meta: {
+        mode: "vocab",
+        groupId: "vocab:review:" + (isType ? "type" : dir) + ":" + format,
+        label: "苦手復習 / " + dirLabelOf(dir, isType) + " / " + fmtLabelOf(format),
+        isReview: true,
         dir: dir,
         format: format,
       },
@@ -273,5 +336,6 @@
     gradeList: gradeList,
     setList: setList,
     build: build,
+    buildFromWords: buildFromWords,
   };
 })(window);

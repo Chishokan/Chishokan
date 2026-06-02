@@ -305,3 +305,49 @@ body {
   padding-top: 6px;
 }
 .records-empty { color: var(--ink-soft); text-align: center; padding: 40px 0; }
+
+/* ===== Mistakes（苦手な単語）===== */
+.mistakes-lead { color: var(--ink-soft); font-size: 0.9rem; margin: 0 0 14px; }
+.mistakes-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.mistakes-actions__label { font-size: 0.85rem; font-weight: 700; color: var(--ink-soft); }
+.pill-btn {
+  padding: 8px 18px;
+  border: 1px solid var(--brand);
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pill-btn:hover { background: var(--brand); color: #fff; }
+
+.mistake-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px dashed var(--line);
+  padding: 8px 0;
+}
+.mistake-item:first-child { border-top: none; }
+.mistake-item__en { font-weight: 700; flex: 0 0 auto; }
+.mistake-item__ja { flex: 1; color: var(--ink-soft); font-size: 0.9rem; word-break: break-word; }
+.mistake-item__count { font-size: 0.78rem; color: var(--bad); font-weight: 700; flex: 0 0 auto; }
+.mistake-item__del {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink-soft);
+  cursor: pointer;
+  line-height: 1;
+}
+.mistake-item__del:hover { border-color: var(--bad); color: var(--bad); }
