@@ -328,15 +328,34 @@ body {
 }
 .pill-btn:hover { background: var(--brand); color: #fff; }
 
-/* ===== Backup（記録の書き出し／読み込み）===== */
-.backup {
+/* ===== データ送信（得点をスプレッドシートへ）===== */
+.send {
   margin-top: 24px;
   padding-top: 18px;
   border-top: 1px solid var(--line, #e5e7eb);
 }
-.backup__label { font-size: 0.85rem; font-weight: 700; color: var(--ink-soft); margin: 0 0 10px; }
-.backup__actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.backup__note { margin: 10px 2px 0; font-size: 0.75rem; color: var(--ink-soft); line-height: 1.5; }
+.send__form {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 360px;
+}
+.send__label { font-size: 0.82rem; color: var(--ink-soft); margin: 0; line-height: 1.5; }
+.send__field { display: flex; flex-direction: column; gap: 4px; }
+.send__field label { font-size: 0.8rem; font-weight: 700; color: var(--ink-soft); }
+.send__select,
+.send__input {
+  padding: 10px 12px;
+  border: 1px solid var(--line, #d1d5db);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #fff;
+  color: var(--ink, #1f2937);
+}
+.send__status { margin: 2px; font-size: 0.85rem; font-weight: 700; min-height: 1.2em; }
+.send__status.is-good { color: var(--brand-dark, #1d4ed8); }
+.send__status.is-bad { color: #dc2626; }
 
 .mistake-item {
   display: flex;

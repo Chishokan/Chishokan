@@ -452,43 +452,93 @@
     global.URL.revokeObjectURL(url);
   }
 
-  // 学習記録＋マイ単語帳を1つのJSONとして書き出す
-  function exportBackup() {
-    var payload = global.StudyStore.exportAll();
-    var blob = new global.Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8;" });
-    var url = global.URL.createObjectURL(blob);
-    var a = doc.createElement("a");
-    var d = new Date();
-    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
-    a.href = url;
-    a.download = "智翔館_学習記録バックアップ_" + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + ".json";
-    doc.body.appendChild(a);
-    a.click();
-    doc.body.removeChild(a);
-    global.URL.revokeObjectURL(url);
+  // ---- データ送信（得点をスプレッドシートへ）----
+
+  // 「データを送信」の開閉
+  function toggleSendForm() {
+    var form = doc.getElementById("send-form");
+    var btn = doc.getElementById("send-toggle");
+    var open = form.hidden;
+    form.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) doc.getElementById("send-status").textContent = "";
   }
 
-  // 選んだJSONファイルを読み込み、既存の記録に統合する
-  function importBackupFile(file) {
-    if (!file) return;
-    var reader = new global.FileReader();
-    reader.onload = function () {
-      var payload;
-      try {
-        payload = JSON.parse(reader.result);
-      } catch (e) {
-        global.alert("読み込めませんでした。バックアップのJSONファイルを選んでください。");
-        return;
-      }
-      var res = global.StudyStore.importAll(payload, "merge");
-      if (!res.ok) {
-        global.alert("このアプリのバックアップファイルではないようです。");
-        return;
-      }
-      renderRecords();
-      global.alert("読み込みました。記録 " + res.recordGroups + " 件 ／ マイ単語帳 " + res.mistakes + " 語（既存の記録に統合）。");
+  // 学習記録を、テスト（groupId）ごとの得点サマリ行に変換する
+  function buildSendRows() {
+    var data = global.StudyStore.exportAll();
+    var records = data.records || {};
+    return Object.keys(records).map(function (gid) {
+      var g = records[gid];
+      var best = g.best || {};
+      var last = (g.history && g.history[0]) || {};
+      return {
+        groupId: gid,
+        test: g.label || gid,
+        mode: gid.split(":")[0],
+        bestScore: best.score != null ? best.score : "",
+        bestTotal: best.total != null ? best.total : "",
+        bestRate: (best.total ? Math.round((best.score / best.total) * 100) : ""),
+        attempts: g.history ? g.history.length : 0,
+        lastScore: last.score != null ? last.score : "",
+        lastTotal: last.total != null ? last.total : "",
+        lastAt: last.at || "",
+      };
+    });
+  }
+
+  function setSendStatus(msg, kind) {
+    var el = doc.getElementById("send-status");
+    el.textContent = msg;
+    el.className = "send__status" + (kind ? " is-" + kind : "");
+  }
+
+  // 入力された生徒情報＋得点サマリをスプレッドシート（Apps Script）へ送信する
+  function sendData() {
+    var grade = doc.getElementById("send-grade").value;
+    var campus = doc.getElementById("send-campus").value;
+    var name = doc.getElementById("send-name").value.trim();
+
+    if (!grade || !campus || !name) {
+      setSendStatus("学年・校舎・名前をすべて入力してください。", "bad");
+      return;
+    }
+    var endpoint = (global.AppConfig && global.AppConfig.SHEET_ENDPOINT) || "";
+    if (!endpoint) {
+      setSendStatus("送信先が未設定です。先生に連絡してください。", "bad");
+      return;
+    }
+    var rows = buildSendRows();
+    if (!rows.length) {
+      setSendStatus("送信できる学習記録がありません。まず問題を解いてください。", "bad");
+      return;
+    }
+
+    var payload = {
+      app: "chishokan-study-tool",
+      sentAt: new Date().toISOString(),
+      student: { grade: grade, campus: campus, name: name },
+      rows: rows,
     };
-    reader.readAsText(file);
+
+    var btn = doc.getElementById("send-submit");
+    btn.disabled = true;
+    setSendStatus("送信中…", null);
+
+    // Apps Script へは text/plain で送る（プリフライトを避けるため）。
+    // 応答はクロスオリジンで読めないので no-cors の成功＝送信完了とみなす。
+    global.fetch(endpoint, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+    }).then(function () {
+      setSendStatus("送信しました（" + rows.length + "件）。ありがとう！", "good");
+      btn.disabled = false;
+    }).catch(function () {
+      setSendStatus("送信に失敗しました。通信環境を確認してもう一度お試しください。", "bad");
+      btn.disabled = false;
+    });
   }
 
   // ---- セットアップ画面のロジック ----
@@ -701,14 +751,9 @@
     doc.getElementById("rika-export").addEventListener("click", exportRikaCSV);
     doc.getElementById("shakai-export").addEventListener("click", exportShakaiCSV);
 
-    // 記録のバックアップ（書き出し／読み込み）
-    doc.getElementById("backup-export").addEventListener("click", exportBackup);
-    var backupFile = doc.getElementById("backup-file");
-    doc.getElementById("backup-import").addEventListener("click", function () { backupFile.click(); });
-    backupFile.addEventListener("change", function () {
-      importBackupFile(backupFile.files && backupFile.files[0]);
-      backupFile.value = ""; // 同じファイルを連続で選べるように
-    });
+    // 学習記録の送信（スプレッドシートへ）
+    doc.getElementById("send-toggle").addEventListener("click", toggleSendForm);
+    doc.getElementById("send-submit").addEventListener("click", sendData);
 
     show("home");
   }

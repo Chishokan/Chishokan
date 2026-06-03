@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>智翔館 学習ドリル</title>
   <meta name="description" content="学習塾 智翔館 中等部向けの学習・演習ツール。計算ドリルと英単語テストをブラウザだけで。" />
-  <link rel="stylesheet" href="css/style.css?v=10" />
+  <link rel="stylesheet" href="css/style.css?v=11" />
 </head>
 <body>
   <header class="app-header">
@@ -288,14 +288,36 @@
       <h2 class="view-title">学習記録</h2>
       <div id="records-body" class="records"></div>
 
-      <div class="backup">
-        <p class="backup__label">バックアップ（学習記録・マイ単語帳をまとめて保存／復元）</p>
-        <div class="backup__actions">
-          <button class="pill-btn" id="backup-export">バックアップを書き出す</button>
-          <button class="pill-btn" id="backup-import">バックアップを読み込む</button>
-          <input type="file" id="backup-file" accept="application/json,.json" hidden />
+      <div class="send">
+        <button class="pill-btn" id="send-toggle" aria-expanded="false">データを送信</button>
+        <div class="send__form" id="send-form" hidden>
+          <p class="send__label">この端末の学習記録（得点）を先生のスプレッドシートへ送ります。</p>
+          <div class="send__field">
+            <label for="send-grade">学年</label>
+            <select id="send-grade" class="send__select">
+              <option value="" selected>選択してください</option>
+              <option value="中1">中1</option>
+              <option value="中2">中2</option>
+              <option value="中3">中3</option>
+            </select>
+          </div>
+          <div class="send__field">
+            <label for="send-campus">校舎</label>
+            <select id="send-campus" class="send__select">
+              <option value="" selected>選択してください</option>
+              <option value="駅前校">駅前校</option>
+              <option value="日宇校">日宇校</option>
+              <option value="大野校">大野校</option>
+              <option value="日野校">日野校</option>
+            </select>
+          </div>
+          <div class="send__field">
+            <label for="send-name">名前</label>
+            <input type="text" id="send-name" class="send__input" placeholder="氏名を入力" autocomplete="off" />
+          </div>
+          <button class="primary-btn" id="send-submit">送信</button>
+          <p class="send__status" id="send-status" aria-live="polite"></p>
         </div>
-        <p class="backup__note">※ この端末に保存された記録を1つのファイル（JSON）にできます。別の端末で「読み込む」と引き継げます（既存の記録に統合されます）。</p>
       </div>
 
       <button class="danger-btn" id="records-clear" hidden>記録を全部消す</button>
@@ -306,11 +328,12 @@
     <p>智翔館 学習ドリル ／ ブラウザだけで動きます（記録はこの端末に保存）</p>
   </footer>
 
-  <script src="js/storage.js?v=10"></script>
-  <script src="js/calc.js?v=10"></script>
-  <script src="js/vocab.js?v=10"></script>
-  <script src="js/rika.js?v=10"></script>
-  <script src="js/shakai.js?v=10"></script>
-  <script src="js/app.js?v=10"></script>
+  <script src="js/config.js?v=11"></script>
+  <script src="js/storage.js?v=11"></script>
+  <script src="js/calc.js?v=11"></script>
+  <script src="js/vocab.js?v=11"></script>
+  <script src="js/rika.js?v=11"></script>
+  <script src="js/shakai.js?v=11"></script>
+  <script src="js/app.js?v=11"></script>
 </body>
 </html>
