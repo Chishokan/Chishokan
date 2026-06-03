@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>智翔館 学習ドリル</title>
   <meta name="description" content="学習塾 智翔館 中等部向けの学習・演習ツール。計算ドリルと英単語テストをブラウザだけで。" />
-  <link rel="stylesheet" href="css/style.css?v=6" />
+  <link rel="stylesheet" href="css/style.css?v=7" />
 </head>
 <body>
   <header class="app-header">
@@ -28,6 +28,11 @@
           <span class="menu-card__icon" aria-hidden="true">ABC</span>
           <span class="menu-card__title">英単語テスト</span>
           <span class="menu-card__desc">中学英単語を4択でチェック</span>
+        </button>
+        <button class="menu-card" data-goto="rika-setup">
+          <span class="menu-card__icon" aria-hidden="true">🧪</span>
+          <span class="menu-card__title">理科テスト</span>
+          <span class="menu-card__desc">中学理科の一問一答を4択で</span>
         </button>
         <button class="menu-card" data-goto="mistakes">
           <span class="menu-card__icon" aria-hidden="true">📕</span>
@@ -129,6 +134,45 @@
       <button class="back-btn" id="vocab-export">収録単語をCSVで書き出す</button>
     </section>
 
+    <!-- 理科：設定 -->
+    <section id="view-rika-setup" class="view" aria-label="理科テストの設定">
+      <button class="back-btn" data-goto="home">← メニューへ</button>
+      <h2 class="view-title">理科テスト</h2>
+
+      <div class="setup">
+        <fieldset class="setup__group">
+          <legend>学年</legend>
+          <div class="chip-row" id="rika-grade"><!-- JSで動的生成 --></div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>分野</legend>
+          <div class="chip-row" id="rika-set"><!-- JSで動的生成 --></div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>出題形式（難易度）</legend>
+          <div class="chip-row" id="rika-format">
+            <label class="chip"><input type="radio" name="rika-format" value="choice4" checked /><span>4択</span></label>
+            <label class="chip"><input type="radio" name="rika-format" value="choice8" /><span>8択</span></label>
+          </div>
+          <p class="setup__note">※問題文を読んで、正しい答えを選びます。誤答の選択肢は同じ分野の用語から自動で選ばれます。</p>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>問題数</legend>
+          <div class="chip-row" id="rika-count">
+            <label class="chip"><input type="radio" name="rika-count" value="5" /><span>5問</span></label>
+            <label class="chip"><input type="radio" name="rika-count" value="10" checked /><span>10問</span></label>
+            <label class="chip"><input type="radio" name="rika-count" value="all" /><span>全部</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <button class="primary-btn" id="rika-start">スタート</button>
+      <button class="back-btn" id="rika-export">収録問題をCSVで書き出す</button>
+    </section>
+
     <!-- 出題（共通） -->
     <section id="view-quiz" class="view" aria-label="出題">
       <div class="quiz-bar">
@@ -207,9 +251,10 @@
     <p>智翔館 学習ドリル ／ ブラウザだけで動きます（記録はこの端末に保存）</p>
   </footer>
 
-  <script src="js/storage.js?v=6"></script>
-  <script src="js/calc.js?v=6"></script>
-  <script src="js/vocab.js?v=6"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/storage.js?v=7"></script>
+  <script src="js/calc.js?v=7"></script>
+  <script src="js/vocab.js?v=7"></script>
+  <script src="js/rika.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

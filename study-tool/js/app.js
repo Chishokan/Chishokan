@@ -27,7 +27,7 @@
     if (el) el.classList.add("is-active");
     if (viewId === "records") renderRecords();
     if (viewId === "mistakes") renderMistakes();
-    if (viewId === "home" || viewId === "calc-setup" || viewId === "vocab-setup") {
+    if (viewId === "home" || viewId === "calc-setup" || viewId === "vocab-setup" || viewId === "rika-setup") {
       // home に戻る系では実行中セッションを止める
       stopTimer();
     }
@@ -410,6 +410,27 @@
     global.URL.revokeObjectURL(url);
   }
 
+  function exportRikaCSV() {
+    var rows = global.RikaQuiz.dump();
+    var header = ["学年", "範囲", "問題", "答え", "誤答候補"];
+    var lines = [header.map(csvCell).join(",")];
+    rows.forEach(function (r) {
+      lines.push([r.gradeLabel, r.setLabel, r.q, r.a, r.d].map(csvCell).join(","));
+    });
+    var csv = "﻿" + lines.join("\r\n") + "\r\n";
+    var blob = new global.Blob([csv], { type: "text/csv;charset=utf-8;" });
+    var url = global.URL.createObjectURL(blob);
+    var a = doc.createElement("a");
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+    a.href = url;
+    a.download = "智翔館_理科問題_" + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + ".csv";
+    doc.body.appendChild(a);
+    a.click();
+    doc.body.removeChild(a);
+    global.URL.revokeObjectURL(url);
+  }
+
   // ---- セットアップ画面のロジック ----
   var lastSetup = null;
 
@@ -454,6 +475,31 @@
     addChip(wrap, "vocab-set", "all", "全範囲（" + total + "語）", false);
   }
 
+  // 理科：学年チップを生成（先頭を選択状態に）
+  function buildRikaGradeOptions() {
+    var wrap = doc.getElementById("rika-grade");
+    wrap.innerHTML = "";
+    global.RikaQuiz.gradeList().forEach(function (g, i) {
+      addChip(wrap, "rika-grade", g.id, g.label, i === 0);
+    });
+  }
+
+  // 選択中の学年に応じて分野チップを作り直す
+  function buildRikaSetOptions() {
+    var gradeId = checkedValue("rika-grade");
+    var wrap = doc.getElementById("rika-set");
+    wrap.innerHTML = "";
+    var list = global.RikaQuiz.setList(gradeId);
+
+    var total = 0;
+    list.forEach(function (s, i) {
+      total += s.count;
+      addChip(wrap, "rika-set", s.id, s.label + "（" + s.count + "問）", i === 0);
+    });
+    // その学年の全分野からまとめて出題
+    addChip(wrap, "rika-set", "all", "全分野（" + total + "問）", false);
+  }
+
   function startCalc() {
     var op = checkedValue("calc-op");
     var level = checkedValue("calc-level");
@@ -471,6 +517,15 @@
     startSession(global.VocabQuiz.build(gradeId, setId, dir, count, format));
   }
 
+  function startRika() {
+    var gradeId = checkedValue("rika-grade");
+    var setId = checkedValue("rika-set");
+    var format = checkedValue("rika-format");
+    var countRaw = checkedValue("rika-count");
+    var count = countRaw === "all" ? "all" : parseInt(countRaw, 10);
+    startSession(global.RikaQuiz.build(gradeId, setId, format, count));
+  }
+
   function retry() {
     if (!lastSetup) { show("home"); return; }
     if (lastSetup.mode === "calc") {
@@ -478,6 +533,8 @@
     } else if (lastSetup.isReview) {
       // 苦手復習：その時点の苦手単語で作り直す（解けた分は減っている）
       startMistakeReview(lastSetup.format);
+    } else if (lastSetup.mode === "rika") {
+      startSession(global.RikaQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.format, session.questions.length));
     } else {
       var count = session.questions.length;
       startSession(global.VocabQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.dir, count, lastSetup.format));
@@ -491,6 +548,10 @@
     // 学年を切り替えたら範囲チップを作り直す
     doc.getElementById("vocab-grade").addEventListener("change", buildVocabSetOptions);
 
+    buildRikaGradeOptions();
+    buildRikaSetOptions();
+    doc.getElementById("rika-grade").addEventListener("change", buildRikaSetOptions);
+
     // データ属性で画面遷移するボタンをまとめて配線
     $all("[data-goto]").forEach(function (btn) {
       btn.addEventListener("click", function () { show(btn.getAttribute("data-goto")); });
@@ -498,6 +559,7 @@
 
     doc.getElementById("calc-start").addEventListener("click", startCalc);
     doc.getElementById("vocab-start").addEventListener("click", startVocab);
+    doc.getElementById("rika-start").addEventListener("click", startRika);
 
     doc.getElementById("quiz-input-form").addEventListener("submit", function (e) {
       e.preventDefault();
@@ -535,6 +597,7 @@
     });
 
     doc.getElementById("vocab-export").addEventListener("click", exportWordsCSV);
+    doc.getElementById("rika-export").addEventListener("click", exportRikaCSV);
 
     show("home");
   }
