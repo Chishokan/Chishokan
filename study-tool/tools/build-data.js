@@ -173,6 +173,23 @@ const CONFIGS = [
       return s + " }";
     },
   },
+  {
+    name: "shakai",
+    csv: "data/shakai_source.csv",
+    file: "js/shakai.js",
+    globalName: "ShakaiQuiz",
+    itemsKey: "items",
+    makeItem: (r) => {
+      const it = { q: r[2], a: r[3] };
+      if (r[4] && r[4].trim()) it.d = r[4].split(/[;；]/).map((s) => s.trim()).filter(Boolean);
+      return it;
+    },
+    serializeItem: (it) => {
+      let s = "{ q: " + str(it.q) + ", a: " + str(it.a);
+      if (it.d && it.d.length) s += ", d: [" + it.d.map(str).join(", ") + "]";
+      return s + " }";
+    },
+  },
 ];
 
 console.log("データ生成:");

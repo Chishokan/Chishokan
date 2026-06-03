@@ -27,7 +27,7 @@
     if (el) el.classList.add("is-active");
     if (viewId === "records") renderRecords();
     if (viewId === "mistakes") renderMistakes();
-    if (viewId === "home" || viewId === "calc-setup" || viewId === "vocab-setup" || viewId === "rika-setup") {
+    if (viewId === "home" || viewId === "calc-setup" || viewId === "vocab-setup" || viewId === "rika-setup" || viewId === "shakai-setup") {
       // home に戻る系では実行中セッションを止める
       stopTimer();
     }
@@ -431,6 +431,27 @@
     global.URL.revokeObjectURL(url);
   }
 
+  function exportShakaiCSV() {
+    var rows = global.ShakaiQuiz.dump();
+    var header = ["学年", "範囲", "問題", "答え", "誤答候補"];
+    var lines = [header.map(csvCell).join(",")];
+    rows.forEach(function (r) {
+      lines.push([r.gradeLabel, r.setLabel, r.q, r.a, r.d].map(csvCell).join(","));
+    });
+    var csv = "﻿" + lines.join("\r\n") + "\r\n";
+    var blob = new global.Blob([csv], { type: "text/csv;charset=utf-8;" });
+    var url = global.URL.createObjectURL(blob);
+    var a = doc.createElement("a");
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+    a.href = url;
+    a.download = "智翔館_社会問題_" + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + ".csv";
+    doc.body.appendChild(a);
+    a.click();
+    doc.body.removeChild(a);
+    global.URL.revokeObjectURL(url);
+  }
+
   // 学習記録＋マイ単語帳を1つのJSONとして書き出す
   function exportBackup() {
     var payload = global.StudyStore.exportAll();
@@ -539,6 +560,31 @@
     addChip(wrap, "rika-set", "all", "全分野（" + total + "問）", false);
   }
 
+  // 社会：単元チップを生成（先頭を選択状態に）
+  function buildShakaiGradeOptions() {
+    var wrap = doc.getElementById("shakai-grade");
+    wrap.innerHTML = "";
+    global.ShakaiQuiz.gradeList().forEach(function (g, i) {
+      addChip(wrap, "shakai-grade", g.id, g.label, i === 0);
+    });
+  }
+
+  // 選択中の単元に応じて項目チップを作り直す
+  function buildShakaiSetOptions() {
+    var gradeId = checkedValue("shakai-grade");
+    var wrap = doc.getElementById("shakai-set");
+    wrap.innerHTML = "";
+    var list = global.ShakaiQuiz.setList(gradeId);
+
+    var total = 0;
+    list.forEach(function (s, i) {
+      total += s.count;
+      addChip(wrap, "shakai-set", s.id, s.label + "（" + s.count + "問）", i === 0);
+    });
+    // その単元の全項目からまとめて出題
+    addChip(wrap, "shakai-set", "all", "全項目（" + total + "問）", false);
+  }
+
   function startCalc() {
     var op = checkedValue("calc-op");
     var level = checkedValue("calc-level");
@@ -565,6 +611,15 @@
     startSession(global.RikaQuiz.build(gradeId, setId, format, count));
   }
 
+  function startShakai() {
+    var gradeId = checkedValue("shakai-grade");
+    var setId = checkedValue("shakai-set");
+    var format = checkedValue("shakai-format");
+    var countRaw = checkedValue("shakai-count");
+    var count = countRaw === "all" ? "all" : parseInt(countRaw, 10);
+    startSession(global.ShakaiQuiz.build(gradeId, setId, format, count));
+  }
+
   function retry() {
     if (!lastSetup) { show("home"); return; }
     if (lastSetup.mode === "calc") {
@@ -574,6 +629,8 @@
       startMistakeReview(lastSetup.format);
     } else if (lastSetup.mode === "rika") {
       startSession(global.RikaQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.format, session.questions.length));
+    } else if (lastSetup.mode === "shakai") {
+      startSession(global.ShakaiQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.format, session.questions.length));
     } else {
       var count = session.questions.length;
       startSession(global.VocabQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.dir, count, lastSetup.format));
@@ -591,6 +648,10 @@
     buildRikaSetOptions();
     doc.getElementById("rika-grade").addEventListener("change", buildRikaSetOptions);
 
+    buildShakaiGradeOptions();
+    buildShakaiSetOptions();
+    doc.getElementById("shakai-grade").addEventListener("change", buildShakaiSetOptions);
+
     // データ属性で画面遷移するボタンをまとめて配線
     $all("[data-goto]").forEach(function (btn) {
       btn.addEventListener("click", function () { show(btn.getAttribute("data-goto")); });
@@ -599,6 +660,7 @@
     doc.getElementById("calc-start").addEventListener("click", startCalc);
     doc.getElementById("vocab-start").addEventListener("click", startVocab);
     doc.getElementById("rika-start").addEventListener("click", startRika);
+    doc.getElementById("shakai-start").addEventListener("click", startShakai);
 
     doc.getElementById("quiz-input-form").addEventListener("submit", function (e) {
       e.preventDefault();
@@ -637,6 +699,7 @@
 
     doc.getElementById("vocab-export").addEventListener("click", exportWordsCSV);
     doc.getElementById("rika-export").addEventListener("click", exportRikaCSV);
+    doc.getElementById("shakai-export").addEventListener("click", exportShakaiCSV);
 
     // 記録のバックアップ（書き出し／読み込み）
     doc.getElementById("backup-export").addEventListener("click", exportBackup);
