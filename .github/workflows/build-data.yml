@@ -1,7 +1,9 @@
 name: Rebuild quiz data
 
 # data/*_source.csv（スプレッドシートからの書き出し＝正本）が更新されたら、
-# js/vocab.js・js/rika.js のデータ部分を自動で生成し直してコミットする。
+# 各アプリの js データ部分を自動で生成し直してコミットする。
+#  - study-tool/   … js/vocab.js・js/rika.js・js/shakai.js
+#  - kenritsu-tool/ … js/rika.js・js/shakai.js
 
 on:
   push:
@@ -9,6 +11,8 @@ on:
       - "study-tool/data/vocab_source.csv"
       - "study-tool/data/rika_source.csv"
       - "study-tool/data/shakai_source.csv"
+      - "kenritsu-tool/data/rika_source.csv"
+      - "kenritsu-tool/data/shakai_source.csv"
   workflow_dispatch: {}
 
 permissions:
@@ -24,15 +28,19 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Rebuild js data from CSV
+      - name: Rebuild study-tool js data from CSV
         run: node study-tool/tools/build-data.js
+
+      - name: Rebuild kenritsu-tool js data from CSV
+        run: node kenritsu-tool/tools/build-data.js
 
       - name: Commit regenerated data
         run: |
-          if [[ -n "$(git status --porcelain study-tool/js)" ]]; then
+          if [[ -n "$(git status --porcelain study-tool/js kenritsu-tool/js)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add study-tool/js/vocab.js study-tool/js/rika.js study-tool/js/shakai.js
+            git add study-tool/js/vocab.js study-tool/js/rika.js study-tool/js/shakai.js \
+                    kenritsu-tool/js/rika.js kenritsu-tool/js/shakai.js
             git commit -m "chore: rebuild quiz data from CSV [skip ci]"
             git push
           else

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>県立中 確認テスト</title>
+  <meta name="description" content="県立中（県立中学校・適性検査対策）向けの確認テスト。動画授業の内容を一問一答（4択・8択）でチェック。" />
+  <link rel="stylesheet" href="css/style.css?v=1" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header__inner">
+      <h1 class="app-header__title">県立中 確認テスト</h1>
+      <p class="app-header__sub">動画授業の内容を一問一答でチェックしよう</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ホーム（メニュー） -->
+    <section id="view-home" class="view is-active" aria-label="メニュー">
+      <div class="menu-grid">
+        <button class="menu-card" data-goto="rika-setup">
+          <span class="menu-card__icon" aria-hidden="true">🧪</span>
+          <span class="menu-card__title">理科</span>
+          <span class="menu-card__desc">単元ごとの一問一答を4択・8択で</span>
+        </button>
+        <button class="menu-card" data-goto="shakai-setup">
+          <span class="menu-card__icon" aria-hidden="true">🌏</span>
+          <span class="menu-card__title">社会</span>
+          <span class="menu-card__desc">単元ごとの一問一答を4択・8択で</span>
+        </button>
+        <button class="menu-card" data-goto="records">
+          <span class="menu-card__icon" aria-hidden="true">★</span>
+          <span class="menu-card__title">学習記録</span>
+          <span class="menu-card__desc">ベストスコアと履歴を確認</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 理科：設定 -->
+    <section id="view-rika-setup" class="view" aria-label="理科 確認テストの設定">
+      <button class="back-btn" data-goto="home">← メニューへ</button>
+      <h2 class="view-title">理科</h2>
+
+      <div class="setup">
+        <fieldset class="setup__group">
+          <legend>単元</legend>
+          <div class="chip-row" id="rika-grade"><!-- JSで動的生成 --></div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>項目</legend>
+          <div class="chip-row" id="rika-set"><!-- JSで動的生成 --></div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>出題形式（難易度）</legend>
+          <div class="chip-row" id="rika-format">
+            <label class="chip"><input type="radio" name="rika-format" value="choice4" checked /><span>4択</span></label>
+            <label class="chip"><input type="radio" name="rika-format" value="choice8" /><span>8択</span></label>
+          </div>
+          <p class="setup__note">※問題文を読んで、正しい答えを選びます。誤答の選択肢は、問題ごとに用意した「間違いやすい候補」からランダムに選ばれます。</p>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>問題数</legend>
+          <div class="chip-row" id="rika-count">
+            <label class="chip"><input type="radio" name="rika-count" value="5" /><span>5問</span></label>
+            <label class="chip"><input type="radio" name="rika-count" value="10" checked /><span>10問</span></label>
+            <label class="chip"><input type="radio" name="rika-count" value="all" /><span>全部</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <button class="primary-btn" id="rika-start">スタート</button>
+      <button class="back-btn" id="rika-export">収録問題をCSVで書き出す</button>
+    </section>
+
+    <!-- 社会：設定 -->
+    <section id="view-shakai-setup" class="view" aria-label="社会 確認テストの設定">
+      <button class="back-btn" data-goto="home">← メニューへ</button>
+      <h2 class="view-title">社会</h2>
+
+      <div class="setup">
+        <fieldset class="setup__group">
+          <legend>単元</legend>
+          <div class="chip-row" id="shakai-grade"><!-- JSで動的生成 --></div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>項目</legend>
+          <div class="chip-row" id="shakai-set"><!-- JSで動的生成 --></div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>出題形式（難易度）</legend>
+          <div class="chip-row" id="shakai-format">
+            <label class="chip"><input type="radio" name="shakai-format" value="choice4" checked /><span>4択</span></label>
+            <label class="chip"><input type="radio" name="shakai-format" value="choice8" /><span>8択</span></label>
+          </div>
+          <p class="setup__note">※問題文を読んで、正しい答えを選びます。誤答の選択肢は、問題ごとに用意した「間違いやすい候補」からランダムに選ばれます。</p>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>問題数</legend>
+          <div class="chip-row" id="shakai-count">
+            <label class="chip"><input type="radio" name="shakai-count" value="5" /><span>5問</span></label>
+            <label class="chip"><input type="radio" name="shakai-count" value="10" checked /><span>10問</span></label>
+            <label class="chip"><input type="radio" name="shakai-count" value="all" /><span>全部</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <button class="primary-btn" id="shakai-start">スタート</button>
+      <button class="back-btn" id="shakai-export">収録問題をCSVで書き出す</button>
+    </section>
+
+    <!-- 出題（共通） -->
+    <section id="view-quiz" class="view" aria-label="出題">
+      <div class="quiz-bar">
+        <button class="back-btn" id="quiz-quit">やめる</button>
+        <div class="quiz-bar__progress">
+          <span id="quiz-index">1</span> / <span id="quiz-total">10</span>
+        </div>
+        <div class="quiz-bar__timer" id="quiz-timer">0.0s</div>
+      </div>
+
+      <div class="progress-track"><div class="progress-track__fill" id="quiz-progress"></div></div>
+
+      <div class="quiz-card">
+        <p class="quiz-card__question" id="quiz-question">—</p>
+
+        <!-- 4択・8択 -->
+        <div class="choices" id="quiz-choices" hidden></div>
+
+        <p class="quiz-feedback" id="quiz-feedback" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- 結果 -->
+    <section id="view-result" class="view" aria-label="結果">
+      <h2 class="view-title">結果</h2>
+      <div class="result-card">
+        <div class="result-score">
+          <span class="result-score__num" id="result-score">0</span>
+          <span class="result-score__den">/ <span id="result-total">10</span></span>
+        </div>
+        <p class="result-meta" id="result-meta">—</p>
+        <p class="result-best" id="result-best"></p>
+      </div>
+
+      <div id="result-review" class="review"></div>
+
+      <div class="result-actions">
+        <button class="primary-btn" id="result-retry">もう一回</button>
+        <button class="back-btn" data-goto="home">メニューへ</button>
+      </div>
+    </section>
+
+    <!-- 学習記録 -->
+    <section id="view-records" class="view" aria-label="学習記録">
+      <button class="back-btn" data-goto="home">← メニューへ</button>
+      <h2 class="view-title">学習記録</h2>
+      <div id="records-body" class="records"></div>
+
+      <div class="backup">
+        <p class="backup__label">バックアップ（学習記録をまとめて保存／復元）</p>
+        <div class="backup__actions">
+          <button class="pill-btn" id="backup-export">バックアップを書き出す</button>
+          <button class="pill-btn" id="backup-import">バックアップを読み込む</button>
+          <input type="file" id="backup-file" accept="application/json,.json" hidden />
+        </div>
+        <p class="backup__note">※ この端末に保存された記録を1つのファイル（JSON）にできます。別の端末で「読み込む」と引き継げます（既存の記録に統合されます）。</p>
+      </div>
+
+      <button class="danger-btn" id="records-clear" hidden>記録を全部消す</button>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>県立中 確認テスト ／ ブラウザだけで動きます（記録はこの端末に保存）</p>
+  </footer>
+
+  <script src="js/storage.js?v=1"></script>
+  <script src="js/rika.js?v=1"></script>
+  <script src="js/shakai.js?v=1"></script>
+  <script src="js/app.js?v=1"></script>
+</body>
+</html>
