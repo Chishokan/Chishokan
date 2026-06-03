@@ -9,6 +9,7 @@
 
   // 学年ごとの単語データ。各 set が画面の「出題範囲」になる。
   // word: { en: 英語, ja: 日本語の意味 }
+  /* AUTO-GENERATED:vocab — data/vocab_source.csv から tools/build-data.js が生成。ここを直接編集せず CSV を編集して取り込む */
   var GRADES = {
     g1: {
       label: "中1",
@@ -330,6 +331,7 @@
       },
     },
   };
+  /* /AUTO-GENERATED:vocab */
 
   // 学年の一覧（出題画面の「学年」チップ用）
   function gradeList() {

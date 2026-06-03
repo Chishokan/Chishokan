@@ -1,0 +1,39 @@
+name: Rebuild quiz data
+
+# data/*_source.csv（スプレッドシートからの書き出し＝正本）が更新されたら、
+# js/vocab.js・js/rika.js のデータ部分を自動で生成し直してコミットする。
+
+on:
+  push:
+    paths:
+      - "study-tool/data/vocab_source.csv"
+      - "study-tool/data/rika_source.csv"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Rebuild js data from CSV
+        run: node study-tool/tools/build-data.js
+
+      - name: Commit regenerated data
+        run: |
+          if [[ -n "$(git status --porcelain study-tool/js)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add study-tool/js/vocab.js study-tool/js/rika.js
+            git commit -m "chore: rebuild quiz data from CSV [skip ci]"
+            git push
+          else
+            echo "No data changes to commit."
+          fi

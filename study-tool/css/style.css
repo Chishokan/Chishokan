@@ -328,6 +328,16 @@ body {
 }
 .pill-btn:hover { background: var(--brand); color: #fff; }
 
+/* ===== Backup（記録の書き出し／読み込み）===== */
+.backup {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line, #e5e7eb);
+}
+.backup__label { font-size: 0.85rem; font-weight: 700; color: var(--ink-soft); margin: 0 0 10px; }
+.backup__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.backup__note { margin: 10px 2px 0; font-size: 0.75rem; color: var(--ink-soft); line-height: 1.5; }
+
 .mistake-item {
   display: flex;
   align-items: center;

@@ -140,6 +140,93 @@
     try { global.localStorage.removeItem(MKEY); } catch (e) { /* noop */ }
   }
 
+  // ===== バックアップ（JSON エクスポート / インポート） =====
+  var BACKUP_APP = "chishokan-study-tool";
+  var BACKUP_VERSION = 1;
+
+  // 学習記録と苦手単語をまとめて1つのオブジェクトに書き出す
+  function exportAll() {
+    return {
+      app: BACKUP_APP,
+      version: BACKUP_VERSION,
+      exportedAt: new Date().toISOString(),
+      records: load(),
+      mistakes: loadMistakes(),
+    };
+  }
+
+  // history からベスト（正答率→短時間）を計算し直す
+  function bestFromHistory(history) {
+    var best = null;
+    (history || []).forEach(function (e) {
+      var rate = e.total > 0 ? e.score / e.total : 0;
+      var cand = { rate: rate, score: e.score, total: e.total, seconds: e.seconds, at: e.at };
+      if (!best || rate > best.rate || (rate === best.rate && e.seconds < best.seconds)) {
+        best = cand;
+      }
+    });
+    return best;
+  }
+
+  // 2つの記録セットを groupId 単位で統合する
+  function mergeRecords(base, incoming) {
+    var out = {};
+    Object.keys(base).forEach(function (k) { out[k] = base[k]; });
+    Object.keys(incoming || {}).forEach(function (gid) {
+      var inc = incoming[gid];
+      if (!out[gid]) { out[gid] = inc; return; }
+      var byAt = {};
+      (out[gid].history || []).concat(inc.history || []).forEach(function (e) {
+        byAt[e.at] = e; // 同時刻は重複とみなして1件に
+      });
+      var hist = Object.keys(byAt).map(function (k) { return byAt[k]; })
+        .sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
+      if (hist.length > MAX_HISTORY) hist.length = MAX_HISTORY;
+      out[gid] = { label: inc.label || out[gid].label, history: hist, best: bestFromHistory(hist) };
+    });
+    return out;
+  }
+
+  // 2つの苦手単語セットを統合する（×回数は多い方、最終日時は新しい方）
+  function mergeMistakes(base, incoming) {
+    var out = {};
+    Object.keys(base).forEach(function (k) { out[k] = base[k]; });
+    Object.keys(incoming || {}).forEach(function (k) {
+      var inc = incoming[k];
+      if (!out[k]) { out[k] = inc; return; }
+      out[k] = {
+        gradeId: inc.gradeId, setId: inc.setId, en: inc.en, ja: inc.ja,
+        count: Math.max(out[k].count || 0, inc.count || 0),
+        firstAt: Math.min(out[k].firstAt || inc.firstAt, inc.firstAt || out[k].firstAt),
+        lastAt: Math.max(out[k].lastAt || 0, inc.lastAt || 0),
+      };
+    });
+    return out;
+  }
+
+  /**
+   * バックアップを取り込む。
+   * @param {object} payload exportAll() が作った形式
+   * @param {string} mode    "merge"（既存に統合・既定）/ "replace"（置き換え）
+   * @returns {object} { ok, recordGroups, mistakes }
+   */
+  function importAll(payload, mode) {
+    if (!payload || payload.app !== BACKUP_APP || typeof payload.records !== "object") {
+      return { ok: false };
+    }
+    var records, mistakes;
+    if (mode === "replace") {
+      records = payload.records || {};
+      mistakes = payload.mistakes || {};
+    } else {
+      records = mergeRecords(load(), payload.records || {});
+      mistakes = mergeMistakes(loadMistakes(), payload.mistakes || {});
+    }
+    save(records);
+    saveMistakes(mistakes);
+    return { ok: true, recordGroups: Object.keys(records).length, mistakes: Object.keys(mistakes).length };
+  }
+
   global.StudyStore = {
     record: record,
     all: all,
@@ -149,5 +236,7 @@
     listMistakes: listMistakes,
     removeMistake: removeMistake,
     clearMistakes: clearMistakes,
+    exportAll: exportAll,
+    importAll: importAll,
   };
 })(window);

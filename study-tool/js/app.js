@@ -431,6 +431,45 @@
     global.URL.revokeObjectURL(url);
   }
 
+  // 学習記録＋マイ単語帳を1つのJSONとして書き出す
+  function exportBackup() {
+    var payload = global.StudyStore.exportAll();
+    var blob = new global.Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8;" });
+    var url = global.URL.createObjectURL(blob);
+    var a = doc.createElement("a");
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+    a.href = url;
+    a.download = "智翔館_学習記録バックアップ_" + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + ".json";
+    doc.body.appendChild(a);
+    a.click();
+    doc.body.removeChild(a);
+    global.URL.revokeObjectURL(url);
+  }
+
+  // 選んだJSONファイルを読み込み、既存の記録に統合する
+  function importBackupFile(file) {
+    if (!file) return;
+    var reader = new global.FileReader();
+    reader.onload = function () {
+      var payload;
+      try {
+        payload = JSON.parse(reader.result);
+      } catch (e) {
+        global.alert("読み込めませんでした。バックアップのJSONファイルを選んでください。");
+        return;
+      }
+      var res = global.StudyStore.importAll(payload, "merge");
+      if (!res.ok) {
+        global.alert("このアプリのバックアップファイルではないようです。");
+        return;
+      }
+      renderRecords();
+      global.alert("読み込みました。記録 " + res.recordGroups + " 件 ／ マイ単語帳 " + res.mistakes + " 語（既存の記録に統合）。");
+    };
+    reader.readAsText(file);
+  }
+
   // ---- セットアップ画面のロジック ----
   var lastSetup = null;
 
@@ -598,6 +637,15 @@
 
     doc.getElementById("vocab-export").addEventListener("click", exportWordsCSV);
     doc.getElementById("rika-export").addEventListener("click", exportRikaCSV);
+
+    // 記録のバックアップ（書き出し／読み込み）
+    doc.getElementById("backup-export").addEventListener("click", exportBackup);
+    var backupFile = doc.getElementById("backup-file");
+    doc.getElementById("backup-import").addEventListener("click", function () { backupFile.click(); });
+    backupFile.addEventListener("change", function () {
+      importBackupFile(backupFile.files && backupFile.files[0]);
+      backupFile.value = ""; // 同じファイルを連続で選べるように
+    });
 
     show("home");
   }
