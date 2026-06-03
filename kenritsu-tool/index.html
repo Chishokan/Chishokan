@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>県立中 確認テスト</title>
   <meta name="description" content="県立中（県立中学校・適性検査対策）向けの確認テスト。動画授業の内容を一問一答（4択・8択）でチェック。" />
-  <link rel="stylesheet" href="css/style.css?v=1" />
+  <link rel="stylesheet" href="css/style.css?v=2" />
 </head>
 <body>
   <header class="app-header">
@@ -128,6 +128,13 @@
       <div class="progress-track"><div class="progress-track__fill" id="quiz-progress"></div></div>
 
       <div class="quiz-card">
+        <!-- 資料（補足テキスト・画像）。問題に資料があるときだけ表示 -->
+        <div class="quiz-resource" id="quiz-resource" hidden>
+          <p class="quiz-resource__label">資料</p>
+          <pre class="quiz-passage" id="quiz-passage" hidden></pre>
+          <img class="quiz-image" id="quiz-image" alt="資料" hidden />
+        </div>
+
         <p class="quiz-card__question" id="quiz-question">—</p>
 
         <!-- 4択・8択 -->
@@ -181,9 +188,9 @@
     <p>県立中 確認テスト ／ ブラウザだけで動きます（記録はこの端末に保存）</p>
   </footer>
 
-  <script src="js/storage.js?v=1"></script>
-  <script src="js/rika.js?v=1"></script>
-  <script src="js/shakai.js?v=1"></script>
-  <script src="js/app.js?v=1"></script>
+  <script src="js/storage.js?v=2"></script>
+  <script src="js/rika.js?v=2"></script>
+  <script src="js/shakai.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
 </body>
 </html>

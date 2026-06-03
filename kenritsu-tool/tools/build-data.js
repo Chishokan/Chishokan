@@ -151,15 +151,23 @@ function buildModule(cfg) {
   console.log("  " + cfg.file + ": " + gradeOrder.length + " 単元 / " + itemCount + " 件");
 }
 
-// 理科・社会で共通の一問一答フォーマット（5列：単元, 項目, 問題, 答え, 誤答候補）
+// 理科・社会で共通の一問一答フォーマット
+//   5列（基本）   ：単元, 項目, 問題, 答え, 誤答候補
+//   7列（資料つき）：…, 資料テキスト, 資料画像   ← どちらも任意（空欄なら通常の選択問題）
+//     r[5]=資料テキスト（補足・データ表など。改行可）→ it.p
+//     r[6]=資料画像（index.html からの相対パス。例 assets/foo.svg）→ it.img
 function makeQAItem(r) {
   const it = { q: r[2], a: r[3] };
   if (r[4] && r[4].trim()) it.d = r[4].split(/[;；]/).map((s) => s.trim()).filter(Boolean);
+  if (r[5] && r[5].trim()) it.p = r[5].replace(/\r\n/g, "\n").trim();
+  if (r[6] && r[6].trim()) it.img = r[6].trim();
   return it;
 }
 function serializeQAItem(it) {
   let s = "{ q: " + str(it.q) + ", a: " + str(it.a);
   if (it.d && it.d.length) s += ", d: [" + it.d.map(str).join(", ") + "]";
+  if (it.p) s += ", p: " + str(it.p);
+  if (it.img) s += ", img: " + str(it.img);
   return s + " }";
 }
 

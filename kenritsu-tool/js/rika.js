@@ -57,7 +57,7 @@
   // 問題に出自（単元・項目）を付けたコピーを返す
   function tagItems(gradeId, setId) {
     return GRADES[gradeId].sets[setId].items.map(function (it) {
-      return { q: it.q, a: it.a, d: it.d || [], gradeId: gradeId, setId: setId };
+      return { q: it.q, a: it.a, d: it.d || [], p: it.p || "", img: it.img || "", gradeId: gradeId, setId: setId };
     });
   }
 
@@ -151,6 +151,8 @@
         answer: it.a,
         choices: shuffle(distractors.concat([it.a])),
         accepts: "choice",
+        passage: it.p || "",
+        image: it.img || "",
         src: { gradeId: it.gradeId, setId: it.setId },
       };
     });
@@ -183,6 +185,8 @@
             q: it.q,
             a: it.a,
             d: (it.d || []).join(";"),
+            p: it.p || "",
+            img: it.img || "",
           });
         });
       });

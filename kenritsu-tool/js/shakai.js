@@ -36,6 +36,18 @@
         },
       },
     },
+    g1v66ygn: {
+      label: "気候とくらし",
+      sets: {
+        s1mcorpg: {
+          label: "日本の気候",
+          items: [
+            { q: "次の資料は、ある都市の月別降水量です。この都市が属する気候を何というか。", a: "瀬戸内の気候", d: ["太平洋側の気候", "日本海側の気候", "中央高地の気候"], p: "ある都市の月別降水量（mm）\n　1月：38\n　6月：150\n　9月：130\n　12月：46\n※ 年間を通して降水量が少ない" },
+            { q: "資料の信号機は、雪の多い地域で多く見られる縦型の信号機です。この形が使われる主な理由として正しいものはどれか。", a: "雪が積もりにくくするため", d: ["製造費を安くするため", "歩行者から見やすくするため", "LEDの数を増やすため"], img: "assets/shingo-tate.svg" },
+          ],
+        },
+      },
+    },
   };
   /* /AUTO-GENERATED:shakai */
 
@@ -57,7 +69,7 @@
   // 問題に出自（単元・項目）を付けたコピーを返す
   function tagItems(gradeId, setId) {
     return GRADES[gradeId].sets[setId].items.map(function (it) {
-      return { q: it.q, a: it.a, d: it.d || [], gradeId: gradeId, setId: setId };
+      return { q: it.q, a: it.a, d: it.d || [], p: it.p || "", img: it.img || "", gradeId: gradeId, setId: setId };
     });
   }
 
@@ -151,6 +163,8 @@
         answer: it.a,
         choices: shuffle(distractors.concat([it.a])),
         accepts: "choice",
+        passage: it.p || "",
+        image: it.img || "",
         src: { gradeId: it.gradeId, setId: it.setId },
       };
     });
@@ -183,6 +197,8 @@
             q: it.q,
             a: it.a,
             d: (it.d || []).join(";"),
+            p: it.p || "",
+            img: it.img || "",
           });
         });
       });

@@ -9,11 +9,17 @@
 
 公開URL（GitHub Pages）：`https://chishokan.github.io/Chishokan/kenritsu-tool/`
 
-## 現在の状態
+## 現在の状態（テスト版）
 
 - 科目：**理科 / 社会**（一問一答・4択／8択）。あとから科目を追加できる構成です。
-- 収録データは **動作確認用のサンプル（各科目5問）** です。実データ（CSV／スプレッドシート）を
-  受け取り次第、`data/rika_source.csv` / `data/shakai_source.csv` を差し替えてください。
+- 出題形式：
+  - **A 4択／8択**（知識確認の核）
+  - **F 資料・図表つき**（問題文の上に「資料」枠＝補足テキストや画像を表示し、4択／8択で答える）
+  - ※ 記述（自己採点・キーワード判定）は今回のテスト版には含めていません（次フェーズ候補）。
+- 収録データは **動作確認用のサンプル**（理科5問／社会7問。うち社会2問が資料つきF）です。
+  実データ（CSV／スプレッドシート）を受け取り次第、`data/rika_source.csv` /
+  `data/shakai_source.csv` を差し替えてください。
+- 資料画像は `assets/` に置きます（サンプルとして `assets/shingo-tate.svg`＝縦型信号機を同梱）。
 
 ## フォルダ構成
 
@@ -26,8 +32,9 @@ kenritsu-tool/
 │  ├─ app.js               画面遷移と出題フロー（共通エンジン）
 │  ├─ rika.js              理科モジュール（単元→項目の一問一答。データは CSV から自動生成）
 │  └─ shakai.js            社会モジュール（同上）
+├─ assets/                 資料画像（例 shingo-tate.svg＝縦型信号機）
 ├─ data/
-│  ├─ rika_source.csv      理科の正本CSV（5列：単元, 項目, 問題, 答え, 誤答候補）
+│  ├─ rika_source.csv      理科の正本CSV（単元, 項目, 問題, 答え, 誤答候補 ＋任意で 資料テキスト, 資料画像）
 │  ├─ shakai_source.csv    社会の正本CSV
 │  └─ README.md            データ運用の説明
 └─ tools/build-data.js     CSV → js/*.js の AUTO-GENERATED ブロックを生成
@@ -55,4 +62,4 @@ node tools/build-data.js
 ## キャッシュ対策
 
 `index.html` の CSS/JS は `?v=N` でバージョン管理しています。データ・コードを更新したら
-`N` を上げると、利用者の端末で確実に再読み込みされます（現在 `v=1`）。
+`N` を上げると、利用者の端末で確実に再読み込みされます（現在 `v=2`）。

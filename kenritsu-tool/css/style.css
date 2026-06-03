@@ -216,6 +216,46 @@ body {
   letter-spacing: 0.02em;
   word-break: break-word;
 }
+/* 資料つき問題は問題文が長くなりがちなので少し控えめに（資料が表示中のときだけ） */
+.quiz-resource:not([hidden]) ~ .quiz-card__question {
+  font-size: 1.25rem;
+}
+
+/* 資料ブロック（補足テキスト・画像） */
+.quiz-resource {
+  text-align: left;
+  background: var(--brand-soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+.quiz-resource__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brand-dark);
+  margin: 0 0 8px;
+  letter-spacing: 0.08em;
+}
+.quiz-passage {
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+/* display 指定は hidden 属性を上書きしてしまうため :not([hidden]) に限定する */
+.quiz-image:not([hidden]) {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  margin: 10px auto 0;
+  background: #fff;
+  border-radius: 8px;
+}
+.quiz-passage:not([hidden]) + .quiz-image:not([hidden]) { margin-top: 12px; }
 
 .quiz-answer { display: flex; gap: 10px; }
 .quiz-input {

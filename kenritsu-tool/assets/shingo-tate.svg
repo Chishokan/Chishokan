@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="320" viewBox="0 0 140 320" role="img" aria-label="縦型の信号機">
+  <rect x="28" y="8" width="84" height="304" rx="18" fill="#2b2b2b" stroke="#111" stroke-width="2"/>
+  <circle cx="70" cy="74" r="34" fill="#e23b3b"/>
+  <circle cx="70" cy="160" r="34" fill="#e3c52b"/>
+  <circle cx="70" cy="246" r="34" fill="#33b864"/>
+</svg>

@@ -75,6 +75,9 @@
     doc.getElementById("quiz-progress").style.width =
       (session.index / session.questions.length) * 100 + "%";
 
+    // 資料（補足テキスト・画像）。どちらか一方でもあれば資料ブロックを表示する。
+    renderResource(q);
+
     feedback.textContent = "";
     feedback.className = "quiz-feedback";
 
@@ -89,6 +92,41 @@
       btn.addEventListener("click", function () { submitAnswer(c, btn); });
       choicesEl.appendChild(btn);
     });
+  }
+
+  // 資料ブロック（passage / image）の表示・非表示を切り替える
+  function renderResource(q) {
+    var resourceEl = doc.getElementById("quiz-resource");
+    var passageEl = doc.getElementById("quiz-passage");
+    var imageEl = doc.getElementById("quiz-image");
+    var hasPassage = !!(q.passage && q.passage.length);
+    var hasImage = !!(q.image && q.image.length);
+
+    if (!hasPassage && !hasImage) {
+      resourceEl.hidden = true;
+      passageEl.hidden = true;
+      imageEl.hidden = true;
+      imageEl.removeAttribute("src");
+      return;
+    }
+    resourceEl.hidden = false;
+
+    if (hasPassage) {
+      passageEl.hidden = false;
+      passageEl.textContent = q.passage;
+    } else {
+      passageEl.hidden = true;
+      passageEl.textContent = "";
+    }
+
+    if (hasImage) {
+      imageEl.hidden = false;
+      imageEl.src = q.image;
+      imageEl.alt = "資料";
+    } else {
+      imageEl.hidden = true;
+      imageEl.removeAttribute("src");
+    }
   }
 
   function submitAnswer(value, sourceBtn) {
@@ -310,10 +348,10 @@
 
   function exportQuizCSV(quiz, fileLabel) {
     var rows = quiz.dump();
-    var header = ["単元", "項目", "問題", "答え", "誤答候補"];
+    var header = ["単元", "項目", "問題", "答え", "誤答候補", "資料テキスト", "資料画像"];
     var lines = [header.map(csvCell).join(",")];
     rows.forEach(function (r) {
-      lines.push([r.gradeLabel, r.setLabel, r.q, r.a, r.d].map(csvCell).join(","));
+      lines.push([r.gradeLabel, r.setLabel, r.q, r.a, r.d, r.p || "", r.img || ""].map(csvCell).join(","));
     });
     // Excelで文字化けしないよう UTF-8 BOM + CRLF
     var csv = "﻿" + lines.join("\r\n") + "\r\n";
