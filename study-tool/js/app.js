@@ -27,7 +27,7 @@
     if (el) el.classList.add("is-active");
     if (viewId === "records") renderRecords();
     if (viewId === "mistakes") renderMistakes();
-    if (viewId === "home" || viewId === "calc-setup" || viewId === "vocab-setup" || viewId === "rika-setup" || viewId === "shakai-setup") {
+    if (viewId === "home" || viewId === "calc-setup" || viewId === "vocab-setup" || viewId === "rika-setup" || viewId === "shakai-setup" || viewId === "math-setup") {
       // home に戻る系では実行中セッションを止める
       stopTimer();
     }
@@ -452,6 +452,27 @@
     global.URL.revokeObjectURL(url);
   }
 
+  function exportMathCSV() {
+    var rows = global.MathQuiz.dump();
+    var header = ["学年", "範囲", "問題", "答え", "誤答候補"];
+    var lines = [header.map(csvCell).join(",")];
+    rows.forEach(function (r) {
+      lines.push([r.gradeLabel, r.setLabel, r.q, r.a, r.d].map(csvCell).join(","));
+    });
+    var csv = "﻿" + lines.join("\r\n") + "\r\n";
+    var blob = new global.Blob([csv], { type: "text/csv;charset=utf-8;" });
+    var url = global.URL.createObjectURL(blob);
+    var a = doc.createElement("a");
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+    a.href = url;
+    a.download = "智翔館_数学問題_" + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + ".csv";
+    doc.body.appendChild(a);
+    a.click();
+    doc.body.removeChild(a);
+    global.URL.revokeObjectURL(url);
+  }
+
   // ---- データ送信（得点をスプレッドシートへ）----
 
   // 「データを送信」の開閉
@@ -635,6 +656,31 @@
     addChip(wrap, "shakai-set", "all", "全項目（" + total + "問）", false);
   }
 
+  // 数学：単元チップを生成（先頭を選択状態に）
+  function buildMathGradeOptions() {
+    var wrap = doc.getElementById("math-grade");
+    wrap.innerHTML = "";
+    global.MathQuiz.gradeList().forEach(function (g, i) {
+      addChip(wrap, "math-grade", g.id, g.label, i === 0);
+    });
+  }
+
+  // 選択中の単元に応じて種類チップを作り直す
+  function buildMathSetOptions() {
+    var gradeId = checkedValue("math-grade");
+    var wrap = doc.getElementById("math-set");
+    wrap.innerHTML = "";
+    var list = global.MathQuiz.setList(gradeId);
+
+    var total = 0;
+    list.forEach(function (s, i) {
+      total += s.count;
+      addChip(wrap, "math-set", s.id, s.label + "（" + s.count + "問）", i === 0);
+    });
+    // その単元の全種類からまとめて出題
+    addChip(wrap, "math-set", "all", "全種類（" + total + "問）", false);
+  }
+
   function startCalc() {
     var op = checkedValue("calc-op");
     var level = checkedValue("calc-level");
@@ -670,6 +716,15 @@
     startSession(global.ShakaiQuiz.build(gradeId, setId, format, count));
   }
 
+  function startMath() {
+    var gradeId = checkedValue("math-grade");
+    var setId = checkedValue("math-set");
+    var format = checkedValue("math-format");
+    var countRaw = checkedValue("math-count");
+    var count = countRaw === "all" ? "all" : parseInt(countRaw, 10);
+    startSession(global.MathQuiz.build(gradeId, setId, format, count));
+  }
+
   function retry() {
     if (!lastSetup) { show("home"); return; }
     if (lastSetup.mode === "calc") {
@@ -681,6 +736,8 @@
       startSession(global.RikaQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.format, session.questions.length));
     } else if (lastSetup.mode === "shakai") {
       startSession(global.ShakaiQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.format, session.questions.length));
+    } else if (lastSetup.mode === "math") {
+      startSession(global.MathQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.format, session.questions.length));
     } else {
       var count = session.questions.length;
       startSession(global.VocabQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.dir, count, lastSetup.format));
@@ -702,6 +759,10 @@
     buildShakaiSetOptions();
     doc.getElementById("shakai-grade").addEventListener("change", buildShakaiSetOptions);
 
+    buildMathGradeOptions();
+    buildMathSetOptions();
+    doc.getElementById("math-grade").addEventListener("change", buildMathSetOptions);
+
     // データ属性で画面遷移するボタンをまとめて配線
     $all("[data-goto]").forEach(function (btn) {
       btn.addEventListener("click", function () { show(btn.getAttribute("data-goto")); });
@@ -711,6 +772,7 @@
     doc.getElementById("vocab-start").addEventListener("click", startVocab);
     doc.getElementById("rika-start").addEventListener("click", startRika);
     doc.getElementById("shakai-start").addEventListener("click", startShakai);
+    doc.getElementById("math-start").addEventListener("click", startMath);
 
     doc.getElementById("quiz-input-form").addEventListener("submit", function (e) {
       e.preventDefault();
@@ -750,6 +812,7 @@
     doc.getElementById("vocab-export").addEventListener("click", exportWordsCSV);
     doc.getElementById("rika-export").addEventListener("click", exportRikaCSV);
     doc.getElementById("shakai-export").addEventListener("click", exportShakaiCSV);
+    doc.getElementById("math-export").addEventListener("click", exportMathCSV);
 
     // 学習記録の送信（スプレッドシートへ）
     doc.getElementById("send-toggle").addEventListener("click", toggleSendForm);

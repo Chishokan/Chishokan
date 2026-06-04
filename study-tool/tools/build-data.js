@@ -190,6 +190,23 @@ const CONFIGS = [
       return s + " }";
     },
   },
+  {
+    name: "math",
+    csv: "data/math_source.csv",
+    file: "js/math.js",
+    globalName: "MathQuiz",
+    itemsKey: "items",
+    makeItem: (r) => {
+      const it = { q: r[2], a: r[3] };
+      if (r[4] && r[4].trim()) it.d = r[4].split(/[;；]/).map((s) => s.trim()).filter(Boolean);
+      return it;
+    },
+    serializeItem: (it) => {
+      let s = "{ q: " + str(it.q) + ", a: " + str(it.a);
+      if (it.d && it.d.length) s += ", d: [" + it.d.map(str).join(", ") + "]";
+      return s + " }";
+    },
+  },
 ];
 
 console.log("データ生成:");

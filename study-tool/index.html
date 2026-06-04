@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>智翔館 学習ドリル</title>
   <meta name="description" content="学習塾 智翔館 中等部向けの学習・演習ツール。計算ドリルと英単語テストをブラウザだけで。" />
-  <link rel="stylesheet" href="css/style.css?v=11" />
+  <link rel="stylesheet" href="css/style.css?v=12" />
 </head>
 <body>
   <header class="app-header">
@@ -38,6 +38,11 @@
           <span class="menu-card__icon" aria-hidden="true">🌏</span>
           <span class="menu-card__title">社会テスト</span>
           <span class="menu-card__desc">中学社会の一問一答を4択で</span>
+        </button>
+        <button class="menu-card" data-goto="math-setup">
+          <span class="menu-card__icon" aria-hidden="true">📐</span>
+          <span class="menu-card__title">連立方程式</span>
+          <span class="menu-card__desc">代入法・加減法など6種類を4択で</span>
         </button>
         <button class="menu-card" data-goto="mistakes">
           <span class="menu-card__icon" aria-hidden="true">📕</span>
@@ -217,6 +222,45 @@
       <button class="back-btn" id="shakai-export">収録問題をCSVで書き出す</button>
     </section>
 
+    <!-- 数学（連立方程式）：設定 -->
+    <section id="view-math-setup" class="view" aria-label="連立方程式の設定">
+      <button class="back-btn" data-goto="home">← メニューへ</button>
+      <h2 class="view-title">連立方程式</h2>
+
+      <div class="setup">
+        <fieldset class="setup__group">
+          <legend>単元</legend>
+          <div class="chip-row" id="math-grade"><!-- JSで動的生成 --></div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>種類</legend>
+          <div class="chip-row" id="math-set"><!-- JSで動的生成 --></div>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>出題形式（難易度）</legend>
+          <div class="chip-row" id="math-format">
+            <label class="chip"><input type="radio" name="math-format" value="choice4" checked /><span>4択</span></label>
+            <label class="chip"><input type="radio" name="math-format" value="choice8" /><span>8択</span></label>
+          </div>
+          <p class="setup__note">※連立方程式を解いて、正しい解（x, y の組）を選びます。誤答は符号ミスや x・y の取りちがえなど「間違いやすい組」から選ばれます。</p>
+        </fieldset>
+
+        <fieldset class="setup__group">
+          <legend>問題数</legend>
+          <div class="chip-row" id="math-count">
+            <label class="chip"><input type="radio" name="math-count" value="5" /><span>5問</span></label>
+            <label class="chip"><input type="radio" name="math-count" value="10" checked /><span>10問</span></label>
+            <label class="chip"><input type="radio" name="math-count" value="all" /><span>全部</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <button class="primary-btn" id="math-start">スタート</button>
+      <button class="back-btn" id="math-export">収録問題をCSVで書き出す</button>
+    </section>
+
     <!-- 出題（共通） -->
     <section id="view-quiz" class="view" aria-label="出題">
       <div class="quiz-bar">
@@ -328,12 +372,13 @@
     <p>智翔館 学習ドリル ／ ブラウザだけで動きます（記録はこの端末に保存）</p>
   </footer>
 
-  <script src="js/config.js?v=11"></script>
-  <script src="js/storage.js?v=11"></script>
-  <script src="js/calc.js?v=11"></script>
-  <script src="js/vocab.js?v=11"></script>
-  <script src="js/rika.js?v=11"></script>
-  <script src="js/shakai.js?v=11"></script>
-  <script src="js/app.js?v=11"></script>
+  <script src="js/config.js?v=12"></script>
+  <script src="js/storage.js?v=12"></script>
+  <script src="js/calc.js?v=12"></script>
+  <script src="js/vocab.js?v=12"></script>
+  <script src="js/rika.js?v=12"></script>
+  <script src="js/shakai.js?v=12"></script>
+  <script src="js/math.js?v=12"></script>
+  <script src="js/app.js?v=12"></script>
 </body>
 </html>

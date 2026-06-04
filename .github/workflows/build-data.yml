@@ -9,6 +9,7 @@ on:
       - "study-tool/data/vocab_source.csv"
       - "study-tool/data/rika_source.csv"
       - "study-tool/data/shakai_source.csv"
+      - "study-tool/data/math_source.csv"
   workflow_dispatch: {}
 
 permissions:
@@ -32,7 +33,7 @@ jobs:
           if [[ -n "$(git status --porcelain study-tool/js)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add study-tool/js/vocab.js study-tool/js/rika.js study-tool/js/shakai.js
+            git add study-tool/js/vocab.js study-tool/js/rika.js study-tool/js/shakai.js study-tool/js/math.js
             git commit -m "chore: rebuild quiz data from CSV [skip ci]"
             git push
           else
