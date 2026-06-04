@@ -10,6 +10,6 @@
     // Apps Script を「ウェブアプリ」としてデプロイし、発行された
     // 「https://script.google.com/macros/s/........./exec」をここに貼り付けてください。
     // （未設定のままだと送信ボタンは「送信先が未設定です」と表示します）
-    SHEET_ENDPOINT: "",
+    SHEET_ENDPOINT: "https://script.google.com/macros/s/AKfycbxFVL24t3kswlVOl8FL3qqZWbuM7ko_xnk2Wza_5YQQWlMRNk7E1mcJ1Xa9tlBNIRAy/exec",
   };
 })(window);
