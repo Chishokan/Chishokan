@@ -77,6 +77,16 @@
     doc.getElementById("quiz-progress").style.width =
       (session.index / session.questions.length) * 100 + "%";
 
+    // 英単語（英語→意味）のとき、問題の英語の下に読み（カタカナ）を表示
+    var readingEl = doc.getElementById("quiz-reading");
+    if (q.questionKana) {
+      readingEl.textContent = q.questionKana;
+      readingEl.hidden = false;
+    } else {
+      readingEl.textContent = "";
+      readingEl.hidden = true;
+    }
+
     feedback.textContent = "";
     feedback.className = "quiz-feedback";
 
@@ -153,6 +163,7 @@
       yours: (value === "" || value == null) ? "(無回答)" : String(value),
       answer: String(q.answer),
       correct: correct,
+      word: q.word || null, // 英単語のとき en/ja/kana を持つ
     });
 
     global.setTimeout(nextQuestion, correct ? 650 : 1100);
@@ -213,6 +224,13 @@
       item.appendChild(mark);
       item.appendChild(qSpan);
       item.appendChild(aSpan);
+      // 英単語：読み（カタカナ）を補助表示
+      if (r.word && r.word.kana) {
+        var kanaSpan = doc.createElement("span");
+        kanaSpan.className = "review-item__kana";
+        kanaSpan.textContent = "🔊 " + r.word.en + "（" + r.word.kana + "）";
+        item.appendChild(kanaSpan);
+      }
       review.appendChild(item);
     });
 
@@ -390,10 +408,10 @@
 
   function exportWordsCSV() {
     var rows = global.VocabQuiz.dump();
-    var header = ["学年", "範囲", "英語", "日本語"];
+    var header = ["学年", "範囲", "英語", "日本語", "カナ"];
     var lines = [header.map(csvCell).join(",")];
     rows.forEach(function (r) {
-      lines.push([r.gradeLabel, r.setLabel, r.en, r.ja].map(csvCell).join(","));
+      lines.push([r.gradeLabel, r.setLabel, r.en, r.ja, r.kana].map(csvCell).join(","));
     });
     // Excelで文字化けしないよう UTF-8 BOM + CRLF
     var csv = "﻿" + lines.join("\r\n") + "\r\n";

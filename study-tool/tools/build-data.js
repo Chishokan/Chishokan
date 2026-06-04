@@ -153,8 +153,16 @@ const CONFIGS = [
     file: "js/vocab.js",
     globalName: "VocabQuiz",
     itemsKey: "words",
-    makeItem: (r) => ({ en: r[2], ja: r[3] }),
-    serializeItem: (it) => "{ en: " + str(it.en) + ", ja: " + str(it.ja) + " }",
+    makeItem: (r) => {
+      const it = { en: r[2], ja: r[3] };
+      if (r[4] && r[4].trim()) it.kana = r[4].trim();
+      return it;
+    },
+    serializeItem: (it) => {
+      let s = "{ en: " + str(it.en) + ", ja: " + str(it.ja);
+      if (it.kana) s += ", kana: " + str(it.kana);
+      return s + " }";
+    },
   },
   {
     name: "rika",
