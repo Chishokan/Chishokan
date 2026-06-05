@@ -357,7 +357,9 @@
   }
 
   // 指定範囲の単語配列。setId が "all" のときは学年内の全範囲を結合。
+  // gradeId が "all" のときは全学年・全範囲を結合。
   function wordsFor(gradeId, setId) {
+    if (gradeId === "all") return allWords();
     var grade = GRADES[gradeId];
     if (!grade) throw new Error("unknown grade: " + gradeId);
     if (setId === "all") {
@@ -381,6 +383,7 @@
   }
 
   function rangeLabel(gradeId, setId) {
+    if (gradeId === "all") return "全学年・全範囲";
     var grade = GRADES[gradeId];
     var prefix = grade ? grade.label + " " : "";
     if (setId === "all") return prefix + "全範囲";

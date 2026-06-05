@@ -297,6 +297,17 @@ body {
   font-weight: 700;
 }
 
+.result-cue {
+  margin: 4px 0 16px;
+  padding: 12px 14px;
+  background: var(--brand-soft);
+  border: 1px solid var(--brand);
+  border-radius: 10px;
+  color: var(--brand-dark);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
 .result-actions { display: flex; flex-direction: column; gap: 10px; }
 
 /* ===== Records ===== */
@@ -323,6 +334,16 @@ body {
 
 /* ===== Mistakes（苦手な単語）===== */
 .mistakes-lead { color: var(--ink-soft); font-size: 0.9rem; margin: 0 0 14px; }
+.mistakes-steps {
+  margin: 0 0 16px;
+  padding: 12px 14px 12px 32px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+.mistakes-steps li { margin: 2px 0; }
 .mistakes-actions {
   display: flex;
   align-items: center;

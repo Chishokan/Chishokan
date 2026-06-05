@@ -234,6 +234,27 @@
       review.appendChild(item);
     });
 
+    // 英単語：結果からマイ単語帳へスムーズに誘導する
+    var isVocab = session.meta.mode === "vocab";
+    var wrongCount = session.review.filter(function (r) { return !r.correct; }).length;
+    var remaining = global.StudyStore.listMistakes().length;
+    var cueEl = doc.getElementById("result-cue");
+    var toMistakesBtn = doc.getElementById("result-to-mistakes");
+
+    if (isVocab && wrongCount > 0) {
+      cueEl.textContent = "まちがえた " + wrongCount + " 語をマイ単語帳に入れたよ。ノートに書いて復習しよう！";
+      cueEl.hidden = false;
+    } else if (isVocab && session.meta.isReview && remaining === 0) {
+      cueEl.textContent = "全部おぼえた！マイ単語帳が空になりました🎉";
+      cueEl.hidden = false;
+    } else if (isVocab && remaining > 0) {
+      cueEl.textContent = "マイ単語帳に " + remaining + " 語のこっているよ。ノートに書いて復習しよう！";
+      cueEl.hidden = false;
+    } else {
+      cueEl.hidden = true;
+    }
+    toMistakesBtn.hidden = !(isVocab && remaining > 0);
+
     // 「もう一回」用に直前の設定を保持
     lastSetup = session.meta;
     show("result");
@@ -316,16 +337,19 @@
     var summary = doc.getElementById("mistakes-summary");
     var actions = doc.getElementById("mistakes-actions");
     var clearBtn = doc.getElementById("mistakes-clear");
+    var steps = doc.getElementById("mistakes-steps");
     var words = global.StudyStore.listMistakes();
 
     body.innerHTML = "";
     if (words.length === 0) {
-      summary.textContent = "マイ単語帳はまだ空です。英単語テストで間違えた単語がここに集まります。";
+      summary.textContent = "🎉 マイ単語帳は空っぽです。英単語テストでまちがえた単語がここに集まります。";
+      steps.hidden = true;
       actions.hidden = true;
       clearBtn.hidden = true;
       return;
     }
-    summary.textContent = "まだ覚えきれていない単語：" + words.length + " 個（正解できると自動で消えます）";
+    summary.textContent = "おぼえていない単語：" + words.length + " 個。ノートに書いて復習しよう（正解すると消えます）。";
+    steps.hidden = false;
     actions.hidden = false;
     clearBtn.hidden = false;
 
@@ -364,7 +388,7 @@
 
         var en = doc.createElement("span");
         en.className = "mistake-item__en";
-        en.textContent = w.en;
+        en.textContent = w.en + (w.kana ? "（" + w.kana + "）" : "");
         var ja = doc.createElement("span");
         ja.className = "mistake-item__ja";
         ja.textContent = w.ja;
@@ -606,6 +630,8 @@
     global.VocabQuiz.gradeList().forEach(function (g, i) {
       addChip(wrap, "vocab-grade", g.id, g.label, i === 0);
     });
+    // 全学年まとめて（全範囲テスト用）
+    addChip(wrap, "vocab-grade", "all", "全学年", false);
   }
 
   // 選択中の学年に応じて出題範囲チップを作り直す
@@ -613,8 +639,15 @@
     var gradeId = checkedValue("vocab-grade");
     var wrap = doc.getElementById("vocab-set");
     wrap.innerHTML = "";
-    var list = global.VocabQuiz.setList(gradeId);
 
+    // 「全学年」を選んだときは、全学年・全範囲の1択
+    if (gradeId === "all") {
+      var allTotal = global.VocabQuiz.dump().length;
+      addChip(wrap, "vocab-set", "all", "全学年・全範囲（" + allTotal + "語）", true);
+      return;
+    }
+
+    var list = global.VocabQuiz.setList(gradeId);
     var total = 0;
     list.forEach(function (s, i) {
       total += s.count;

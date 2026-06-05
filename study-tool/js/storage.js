@@ -105,10 +105,11 @@
     if (!w || !w.en) return;
     var m = loadMistakes();
     var k = mistakeKey(w);
-    var e = m[k] || { gradeId: w.gradeId, setId: w.setId, en: w.en, ja: w.ja, count: 0, firstAt: Date.now() };
+    var e = m[k] || { gradeId: w.gradeId, setId: w.setId, en: w.en, ja: w.ja, kana: w.kana, count: 0, firstAt: Date.now() };
     e.count += 1;
     e.lastAt = Date.now();
     e.ja = w.ja;        // 表記更新に追随
+    e.kana = w.kana;
     e.setId = w.setId;
     m[k] = e;
     saveMistakes(m);

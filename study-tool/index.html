@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>智翔館 学習ドリル</title>
   <meta name="description" content="学習塾 智翔館 中等部向けの学習・演習ツール。計算ドリルと英単語テストをブラウザだけで。" />
-  <link rel="stylesheet" href="css/style.css?v=14" />
+  <link rel="stylesheet" href="css/style.css?v=15" />
 </head>
 <body>
   <header class="app-header">
@@ -302,9 +302,12 @@
         <p class="result-best" id="result-best"></p>
       </div>
 
+      <p class="result-cue" id="result-cue" hidden></p>
+
       <div id="result-review" class="review"></div>
 
       <div class="result-actions">
+        <button class="primary-btn" id="result-to-mistakes" data-goto="mistakes" hidden>マイ単語帳で復習する →</button>
         <button class="primary-btn" id="result-retry">もう一回</button>
         <button class="back-btn" data-goto="home">メニューへ</button>
       </div>
@@ -316,8 +319,14 @@
       <h2 class="view-title">マイ単語帳</h2>
       <p class="mistakes-lead" id="mistakes-summary">—</p>
 
+      <ol class="mistakes-steps" id="mistakes-steps" hidden>
+        <li>まちがえた単語を <strong>ノートに書こう</strong> ✍️</li>
+        <li>書けたら下のボタンで <strong>復習</strong> しよう</li>
+        <li>正解した単語はリストから消えます。<strong>0個になるまで</strong>くりかえそう！</li>
+      </ol>
+
       <div class="mistakes-actions" id="mistakes-actions" hidden>
-        <span class="mistakes-actions__label">この単語帳で復習：</span>
+        <span class="mistakes-actions__label">② ノートに書いたら復習：</span>
         <button class="pill-btn" data-review="choice4">4択</button>
         <button class="pill-btn" data-review="choice8">8択</button>
         <button class="pill-btn" data-review="type">記述</button>
@@ -373,13 +382,13 @@
     <p>智翔館 学習ドリル ／ ブラウザだけで動きます（記録はこの端末に保存）</p>
   </footer>
 
-  <script src="js/config.js?v=14"></script>
-  <script src="js/storage.js?v=14"></script>
-  <script src="js/calc.js?v=14"></script>
-  <script src="js/vocab.js?v=14"></script>
-  <script src="js/rika.js?v=14"></script>
-  <script src="js/shakai.js?v=14"></script>
-  <script src="js/math.js?v=14"></script>
-  <script src="js/app.js?v=14"></script>
+  <script src="js/config.js?v=15"></script>
+  <script src="js/storage.js?v=15"></script>
+  <script src="js/calc.js?v=15"></script>
+  <script src="js/vocab.js?v=15"></script>
+  <script src="js/rika.js?v=15"></script>
+  <script src="js/shakai.js?v=15"></script>
+  <script src="js/math.js?v=15"></script>
+  <script src="js/app.js?v=15"></script>
 </body>
 </html>
