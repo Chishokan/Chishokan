@@ -623,6 +623,28 @@
     wrap.appendChild(label);
   }
 
+  // 複数選択用のチェックボックス・チップ。作った input を返す。
+  function addCheck(wrap, name, value, text, checked) {
+    var label = doc.createElement("label");
+    label.className = "chip";
+    var input = doc.createElement("input");
+    input.type = "checkbox";
+    input.name = name;
+    input.value = value;
+    if (checked) input.checked = true;
+    var span = doc.createElement("span");
+    span.textContent = text;
+    label.appendChild(input);
+    label.appendChild(span);
+    wrap.appendChild(label);
+    return input;
+  }
+
+  // name のチェックされた値をすべて返す
+  function checkedValues(name) {
+    return $all('input[name="' + name + '"]:checked').map(function (el) { return el.value; });
+  }
+
   // 学年チップを生成（先頭を選択状態に）
   function buildVocabGradeOptions() {
     var wrap = doc.getElementById("vocab-grade");
@@ -634,27 +656,40 @@
     addChip(wrap, "vocab-grade", "all", "全学年", false);
   }
 
-  // 選択中の学年に応じて出題範囲チップを作り直す
+  // 選択中の学年に応じて出題範囲チップ（複数選択）を作り直す。
+  // 範囲は Unit1 Part1 / Part2 … のように個別に選べる（既定は全部オン）。
   function buildVocabSetOptions() {
     var gradeId = checkedValue("vocab-grade");
     var wrap = doc.getElementById("vocab-set");
     wrap.innerHTML = "";
 
-    // 「全学年」を選んだときは、全学年・全範囲の1択
+    // 候補範囲を集める（value は "学年ID|範囲ID"）
+    var ranges = [];
     if (gradeId === "all") {
-      var allTotal = global.VocabQuiz.dump().length;
-      addChip(wrap, "vocab-set", "all", "全学年・全範囲（" + allTotal + "語）", true);
-      return;
+      global.VocabQuiz.gradeList().forEach(function (g) {
+        global.VocabQuiz.setList(g.id).forEach(function (s) {
+          ranges.push({ value: g.id + "|" + s.id, label: g.label + " " + s.label, count: s.count });
+        });
+      });
+    } else {
+      global.VocabQuiz.setList(gradeId).forEach(function (s) {
+        ranges.push({ value: gradeId + "|" + s.id, label: s.label, count: s.count });
+      });
     }
 
-    var list = global.VocabQuiz.setList(gradeId);
-    var total = 0;
-    list.forEach(function (s, i) {
-      total += s.count;
-      addChip(wrap, "vocab-set", s.id, s.label + "（" + s.count + "語）", i === 0);
+    // 先頭に「すべて」マスター。各範囲は既定でオン。
+    var master = addCheck(wrap, "vocab-set-all", "all", "すべて", true);
+    var inputs = ranges.map(function (r) {
+      return addCheck(wrap, "vocab-set", r.value, r.label + "（" + r.count + "語）", true);
     });
-    // その学年の全範囲からまとめて出題
-    addChip(wrap, "vocab-set", "all", "全範囲（" + total + "語）", false);
+
+    function syncMaster() {
+      master.checked = inputs.length > 0 && inputs.every(function (i) { return i.checked; });
+    }
+    master.addEventListener("change", function () {
+      inputs.forEach(function (i) { i.checked = master.checked; });
+    });
+    inputs.forEach(function (i) { i.addEventListener("change", syncMaster); });
   }
 
   // 理科：学年チップを生成（先頭を選択状態に）
@@ -740,13 +775,17 @@
   }
 
   function startVocab() {
-    var gradeId = checkedValue("vocab-grade");
-    var setId = checkedValue("vocab-set");
     var dir = checkedValue("vocab-dir");
     var format = checkedValue("vocab-format");
     var countRaw = checkedValue("vocab-count");
     var count = countRaw === "all" ? "all" : parseInt(countRaw, 10);
-    startSession(global.VocabQuiz.build(gradeId, setId, dir, count, format));
+    var values = checkedValues("vocab-set");
+    if (!values.length) { global.alert("出題する範囲を1つ以上えらんでください。"); return; }
+    var pairs = values.map(function (v) {
+      var p = v.split("|");
+      return { gradeId: p[0], setId: p[1] };
+    });
+    startSession(global.VocabQuiz.buildSelection(pairs, dir, count, format));
   }
 
   function startRika() {
@@ -789,6 +828,9 @@
       startSession(global.ShakaiQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.format, session.questions.length));
     } else if (lastSetup.mode === "math") {
       startSession(global.MathQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.format, session.questions.length));
+    } else if (lastSetup.pairs) {
+      // 英単語（複数範囲を選んで出題）
+      startSession(global.VocabQuiz.buildSelection(lastSetup.pairs, lastSetup.dir, session.questions.length, lastSetup.format));
     } else {
       var count = session.questions.length;
       startSession(global.VocabQuiz.build(lastSetup.gradeId, lastSetup.setId, lastSetup.dir, count, lastSetup.format));

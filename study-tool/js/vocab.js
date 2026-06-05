@@ -503,6 +503,42 @@
     };
   }
 
+  // 複数範囲の単語を結合する。pairs = [{ gradeId, setId }, ...]
+  function wordsForSelection(pairs) {
+    var merged = [];
+    pairs.forEach(function (p) { merged = merged.concat(tagWords(p.gradeId, p.setId)); });
+    return merged;
+  }
+  function selectionLabel(pairs) {
+    if (!pairs || pairs.length === 0) return "（範囲未選択）";
+    if (pairs.length === 1) return rangeLabel(pairs[0].gradeId, pairs[0].setId);
+    return rangeLabel(pairs[0].gradeId, pairs[0].setId) + " ほか" + (pairs.length - 1) + "範囲";
+  }
+
+  /**
+   * 選んだ複数範囲から問題を作る（Unit1 Part1・Part2 などの組み合わせ）。
+   * @param {Array} pairs [{ gradeId, setId }, ...]
+   */
+  function buildSelection(pairs, dir, count, format) {
+    format = format || "choice4";
+    var isType = format === "type";
+    var words = wordsForSelection(pairs);
+    var questions = makeQuestions(words, dir, count, format, words);
+    var key = pairs.map(function (p) { return p.gradeId + "/" + p.setId; }).sort().join(",");
+
+    return {
+      questions: questions,
+      meta: {
+        mode: "vocab",
+        groupId: "vocab:sel:" + key + ":" + (isType ? "type" : dir) + ":" + format,
+        label: "英単語 / " + selectionLabel(pairs) + " / " + dirLabelOf(dir, isType) + " / " + fmtLabelOf(format),
+        pairs: pairs,
+        dir: dir,
+        format: format,
+      },
+    };
+  }
+
   /**
    * 任意の単語配列（＝苦手単語）から復習問題を作る。
    * ダミー選択肢は全収録単語から供給するので、苦手が少なくても選択肢が揃う。
@@ -554,6 +590,7 @@
     gradeList: gradeList,
     setList: setList,
     build: build,
+    buildSelection: buildSelection,
     buildFromWords: buildFromWords,
     dump: dump,
   };
