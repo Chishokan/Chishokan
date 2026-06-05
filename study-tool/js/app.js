@@ -432,10 +432,10 @@
 
   function exportWordsCSV() {
     var rows = global.VocabQuiz.dump();
-    var header = ["学年", "範囲", "英語", "日本語", "カナ"];
+    var header = ["学年", "範囲", "英語", "日本語", "カナ", "誤答(意味)", "誤答(英語)"];
     var lines = [header.map(csvCell).join(",")];
     rows.forEach(function (r) {
-      lines.push([r.gradeLabel, r.setLabel, r.en, r.ja, r.kana].map(csvCell).join(","));
+      lines.push([r.gradeLabel, r.setLabel, r.en, r.ja, r.kana, r.dj, r.de].map(csvCell).join(","));
     });
     // Excelで文字化けしないよう UTF-8 BOM + CRLF
     var csv = "﻿" + lines.join("\r\n") + "\r\n";

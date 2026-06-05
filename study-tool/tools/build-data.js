@@ -156,11 +156,17 @@ const CONFIGS = [
     makeItem: (r) => {
       const it = { en: r[2], ja: r[3] };
       if (r[4] && r[4].trim()) it.kana = r[4].trim();
+      const dj = (r[5] || "").split(/[;；]/).map((s) => s.trim()).filter(Boolean);
+      const de = (r[6] || "").split(/[;；]/).map((s) => s.trim()).filter(Boolean);
+      if (dj.length) it.dj = dj; // 意味（日本語）の誤答候補
+      if (de.length) it.de = de; // 英語の誤答候補
       return it;
     },
     serializeItem: (it) => {
       let s = "{ en: " + str(it.en) + ", ja: " + str(it.ja);
       if (it.kana) s += ", kana: " + str(it.kana);
+      if (it.dj) s += ", dj: [" + it.dj.map(str).join(", ") + "]";
+      if (it.de) s += ", de: [" + it.de.map(str).join(", ") + "]";
       return s + " }";
     },
   },
